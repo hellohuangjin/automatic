@@ -1,0 +1,226 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" 主窗口 """
+
+import os
+
+import wx
+import wx.grid
+
+from context import PRJ_PATH, server, evt_watcher
+
+from common.defines import EVENT
+
+from gui.custome import LabelTable, ListTable, Button
+from gui.diolag import SelectDiolag, ImageExplore, LoginDiolag
+
+
+class MainApp(wx.App):
+    """" Application """
+
+    def OnInit(self):
+        """覆盖父类方法，初始化显示"""
+        frame = MainFrame(parent=None, title=u"自动分拣")
+        frame.SetSize((1366, 768))
+        frame.MoveXY(20, 20)
+        frame.Show(True)
+        return True
+
+
+class MainFrame(wx.Frame):
+    """ 主界面 """
+
+    def __init__(self, parent, title):
+        """
+        如果父元素为None(默认为None, 必须传入),则该frame作为顶级元素，
+        title为窗口标题，可以不设置。
+        :param parent:父元素
+        :param title:窗口标题
+        :return None
+        """
+
+        style = wx.DEFAULT_FRAME_STYLE ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX)
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=title, size=(1366, 768), style=style)
+
+        evt_watcher.attach(EVENT.PROGRAM_ERROR, self.program_error)
+
+        self.status_panel = StatusPanel(self)
+        self.info_panel = InfoPanel(self)
+        self.ctrl_panel = CtrlPanel(self)
+        self.list_panel = ListPanel(self)
+
+        left = wx.BoxSizer(wx.VERTICAL)
+
+        left.Add(self.status_panel, 0, wx.EXPAND)
+        left.Add(self.info_panel, 0, wx.EXPAND | wx.TOP, 30)
+        left.Add(self.ctrl_panel, 0, wx.EXPAND | wx.TOP, 30)
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(left, wx.ID_ANY, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM, 30)
+        sizer.Add(self.list_panel, wx.ID_ANY, wx.EXPAND | wx.RIGHT | wx.TOP | wx.LEFT, 30)
+
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+
+        self.Show(True)
+
+    def program_error(self, msg):
+        """
+        程序初始化错误处理
+        :param msg:错误信息
+        :return None
+        """
+        self.Hide()
+        err_app = wx.App()
+        err_frame = wx.Frame()
+        dlg = wx.MessageDialog(err_frame, msg, u"程序错误", wx.OK | wx.ICON_ERROR)
+        dlg.ShowModal()
+        err_frame.Show(True)
+        err_app.MainLoop()
+        print "program error", msg
+
+
+class ListPanel(wx.Panel):
+    """ panel """
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent, size=(476, 600))
+
+        self.list = ListTable(self)
+        self.list.SetSize((476, 600))
+        self.list.set_label(["id", u"运单号"])
+
+
+class StatusPanel(wx.Panel):
+    """状态展示panel """
+
+    def __init__(self, parent):
+        super(StatusPanel, self).__init__(parent)
+        img_url = os.path.join(PRJ_PATH, "source/img/ready.png")
+        image = wx.Image(img_url, wx.BITMAP_TYPE_PNG).Scale(800, 350)
+        self.static_img = wx.StaticBitmap(self, wx.ID_ANY, image.ConvertToBitmap(), size=(800, 350))
+        evt_watcher.attach(EVENT.EVT_PAUSE, self.change_status)
+
+    def change_status(self, msg):
+        """
+        状态改变监听事件
+        :param msg: 事件名称
+        :return: None
+        """
+        img_url = None
+        if msg == "pause":
+            img_url = os.path.join(PRJ_PATH, 'source/img/pause.png')
+        elif msg == "urgency":
+            img_url = os.path.join(PRJ_PATH, 'source/img/uergency.png')
+        elif msg == "complete":
+            img_url = os.path.join(PRJ_PATH, 'source/img/ready.png')
+
+        image = wx.Image(img_url, wx.BITMAP_TYPE_PNG).Scale(800, 350)
+        self.static_img.SetBitmap(image.ConvertToBitmap())
+
+
+class InfoPanel(wx.Panel):
+    """信息展示panel"""
+
+    def __init__(self, parent):
+        super(InfoPanel, self).__init__(parent)
+
+        self.e_img = wx.Image("/Users/lambda/Downloads/e.jpg", wx.BITMAP_TYPE_JPEG).Scale(300, 246)
+        self.express_img = wx.BitmapButton(self, wx.ID_ANY, wx.NullBitmap, size=(300, 246))
+        self.express_img.SetBitmap(wx.BitmapFromImage(self.e_img))
+
+        labels = [u"快递公司", u"接驳批次", u"快件总数", u"接驳数", u"手机号识别数", u"异常件数"]
+
+        self.table = LabelTable(self)
+        self.table.SetSize((550, 246))
+        self.table.set_label(labels)
+
+        self.express_img.Bind(wx.EVT_BUTTON, self.img_explore)
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self.table, wx.ID_ANY, wx.EXPAND)
+        sizer.Add(self.express_img, wx.ID_ANY, wx.EXPAND | wx.LEFT, 50)
+
+        self.SetSizer(sizer)
+
+    def img_explore(self, event):
+        """
+        图片点击时触发浏览大图
+        :param event:事件类型
+        :return None
+        """
+
+        dlg = ImageExplore(self, u"快递面单")
+        dlg.set_img(wx.BitmapFromImage(self.e_img))
+        dlg.SetPosition((478, 150))
+        dlg.ShowModal()
+        dlg.Destroy()
+
+
+class CtrlPanel(wx.Panel):
+    """ list panel  """
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.start = Button(self, text=u"开始接驳", size=(120, 52), colour='green')
+        self.pause = Button(self, u"暂停接驳", (120, 52), 'yellow')
+        self.complete = Button(self, u"完成接驳", (120, 52), 'green')
+        self.stop = Button(self, u"关机", (120, 52), 'red')
+        self.login = Button(self, u"登录", (120, 52), 'white')
+
+        sizer.Add(self.start, 0, wx.EXPAND)
+        sizer.Add(self.pause, 0, wx.EXPAND | wx.LEFT, 50)
+        sizer.Add(self.complete, 0, wx.EXPAND | wx.LEFT, 50)
+        sizer.Add(self.stop, 0, wx.EXPAND | wx.LEFT, 50)
+        sizer.Add(self.login, 0, wx.EXPAND | wx.LEFT, 50)
+
+        self.Bind(wx.EVT_BUTTON, self.on_start, self.start)
+        self.Bind(wx.EVT_BUTTON, self.on_pause, self.pause)
+        self.Bind(wx.EVT_BUTTON, self.on_complete, self.complete)
+        self.Bind(wx.EVT_BUTTON, self.on_stop, self.stop)
+        self.Bind(wx.EVT_BUTTON, self.on_login, self.login)
+
+        self.SetSizer(sizer)
+
+    def on_login(self, event):
+        if server.uid:
+            login = LoginDiolag(self)
+            login.SetPosition((550, 250))
+            login.ShowModal()
+            self.login.SetLabel(u"注销")
+            login.Destroy()
+        else:
+            server.logout()
+
+    def on_start(self, event):
+        """
+        设备启动菜单时间处理器
+        点击启动菜单时调用该函数，event为必需参数
+        :param event:事件类型
+        :return None
+        """
+        express_list = server.get_express_list()
+        select = SelectDiolag(self, u"选择窗口", express_list)
+        select.SetPosition((400, 200))
+        code = select.ShowModal()
+        if code != wx.ID_OK:
+            server.clear_batch()
+        else:
+            evt_watcher.notice(EVENT.EVT_START, "start")
+
+        select.Destroy()
+
+    def on_pause(self, event):
+        evt_watcher.notice(EVENT.EVT_PAUSE)
+
+    def on_complete(self, event):
+        evt_watcher.notice(EVENT.EVT_COMPLETE, "complete")
+
+    def on_stop(self, event):
+        evt_watcher.notice(EVENT.EVT_STOP, "stop")
+
+if __name__ == '__main__':
+    app = MainApp()
+    app.MainLoop()
