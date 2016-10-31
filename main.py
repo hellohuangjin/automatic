@@ -23,7 +23,7 @@ class Communicate(object):
         :param name:端口名称
         """
         self.inner_queue = Queue()
-        self.socket = CameraTools(mqueue, 9990)
+        self.socket = CameraTools(mqueue, 8500)
         self.serial = BoardTools(name, 9600)
 
     def send(self, cmd):
@@ -34,20 +34,20 @@ class Communicate(object):
         """
         self.inner_queue.put(cmd)
 
-    @staticmethod
-    def run(ins):
-        """
-        等待命令
-        子线程，转发命令
-        """
-        ins.socket.start_monitor()
-        ins.serial.start_monitor()
-        while True:
-            cmd = ins.inner_queue.get()
-            if cmd.target == TYPE.net:
-                ins.socket.send_command(cmd.content)
-            if cmd.target == TYPE.serial:
-                ins.serial.send_command(cmd.content)
+
+def communicate_process(ins):
+    """
+    等待命令
+    子线程，转发命令
+    """
+    ins.socket.start_monitor()
+    ins.serial.start_monitor()
+    while True:
+        cmd = ins.inner_queue.get()
+        if cmd.target == TYPE.net:
+            ins.socket.send_command(cmd.content)
+        if cmd.target == TYPE.serial:
+            ins.serial.send_command(cmd.content)
 
 
 class Recognize(Process):
@@ -64,16 +64,15 @@ class Recognize(Process):
         self.queue = mqueue
         self.name = name
 
-    def run(self):
-        """执行函数"""
-        while True:
-            img = self.queue.get()
-            if img == 'quit':
-                print "quit", self.name
-                break
-            print "start task", img, self.name
-            time.sleep(0.5)
-
+def recognize_process(ins):
+    """执行函数"""
+    while True:
+        img = ins.queue.get()
+        if img == 'quit':
+            print "quit", ins.name
+            break
+        print "start task", img, ins.name
+        time.sleep(0.5)
 
 def main():
     """main函数"""
@@ -81,12 +80,13 @@ def main():
     app = MainApp()
     queue = Queue()
     for i in range(2):
-        task = Recognize(queue, str(i))
-        task.daemon = True
-        task.start()
+        reg = Recognize(queue, str(i))
+        proccess = Process(target=recognize_process, args=(reg,))
+        proccess.daemon = True
+        proccess.start()
 
     com = Communicate(queue)
-    pro = Process(target=com.run, args=(com,))
+    pro = Process(target=recognize_process, args=(com,))
     pro.daemon = True
     pro.start()
     app.MainLoop()

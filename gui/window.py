@@ -124,10 +124,9 @@ class InfoPanel(wx.Panel):
 
     def __init__(self, parent):
         super(InfoPanel, self).__init__(parent)
+        self.img = wx.NullBitmap
 
-        self.e_img = wx.Image("/Users/lambda/Downloads/e.jpg", wx.BITMAP_TYPE_JPEG).Scale(300, 246)
         self.express_img = wx.BitmapButton(self, wx.ID_ANY, wx.NullBitmap, size=(300, 246))
-        self.express_img.SetBitmap(wx.BitmapFromImage(self.e_img))
 
         labels = [u"快递公司", u"接驳批次", u"快件总数", u"接驳数", u"手机号识别数", u"异常件数"]
 
@@ -151,7 +150,7 @@ class InfoPanel(wx.Panel):
         """
 
         dlg = ImageExplore(self, u"快递面单")
-        dlg.set_img(wx.BitmapFromImage(self.e_img))
+        dlg.set_img(wx.BitmapFromImage(self.img))
         dlg.SetPosition((478, 150))
         dlg.ShowModal()
         dlg.Destroy()
