@@ -16,7 +16,7 @@ PRJ_PATH = os.path.dirname(os.path.abspath(__file__))
 log = Logger(PRJ_PATH)
 
 # 事件观察者
-evt_watcher = RegisterTable()
+watcher = RegisterTable()
 
 # 全局http请求数据
 server = Server()
