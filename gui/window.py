@@ -7,7 +7,7 @@ import os
 import wx
 import wx.grid
 
-from context import PRJ_PATH, server, evt_watcher
+from context import PRJ_PATH, server, watcher
 
 from common.defines import EVENT
 
@@ -42,7 +42,7 @@ class MainFrame(wx.Frame):
         style = wx.DEFAULT_FRAME_STYLE ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX)
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=title, size=(1366, 768), style=style)
 
-        evt_watcher.attach(EVENT.PROGRAM_ERROR, self.program_error)
+        watcher.attach(EVENT.PROGRAM_ERROR, self.program_error)
 
         self.status_panel = StatusPanel(self)
         self.info_panel = InfoPanel(self)
@@ -89,6 +89,18 @@ class ListPanel(wx.Panel):
         self.list = ListTable(self)
         self.list.SetSize((476, 600))
         self.list.set_label(["id", u"运单号"])
+        self.index = 0
+        self.data = list()
+        watcher.attach(EVENT.EVT_CAMERA, self.new_data)
+
+    def new_data(self, msg):
+        """ 添加新纪录 """
+        self.index += 1
+        if len(self.data) > 16:
+            self.data.pop()
+        code = msg.split(",")
+        self.data.insert(0, (self.index, code[0]))
+        self.list.set_data(self.data)
 
 
 class StatusPanel(wx.Panel):
@@ -99,7 +111,7 @@ class StatusPanel(wx.Panel):
         img_url = os.path.join(PRJ_PATH, "source/img/ready.png")
         image = wx.Image(img_url, wx.BITMAP_TYPE_PNG).Scale(800, 350)
         self.static_img = wx.StaticBitmap(self, wx.ID_ANY, image.ConvertToBitmap(), size=(800, 350))
-        evt_watcher.attach(EVENT.EVT_PAUSE, self.change_status)
+        watcher.attach(EVENT.EVT_PAUSE, self.change_status)
 
     def change_status(self, msg):
         """
@@ -140,7 +152,14 @@ class InfoPanel(wx.Panel):
         sizer.Add(self.table, wx.ID_ANY, wx.EXPAND)
         sizer.Add(self.express_img, wx.ID_ANY, wx.EXPAND | wx.LEFT, 50)
 
+        watcher.attach(EVENT.EVT_CAMERA, self.change_img)
+
         self.SetSizer(sizer)
+
+    def change_img(self, name):
+        url = "c:/img/"+name+".bmp"
+        img = wx.Image(url, wx.BITMAP_TYPE_BMP)
+        self.express_img.SetBitmap(img.ConvertToBitmap())
 
     def img_explore(self, event):
         """

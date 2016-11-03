@@ -6,7 +6,7 @@ python socket 通信模块
 import socket
 import threading
 
-from context import log, evt_watcher
+from context import log, watcher
 
 from common.defines import EVENT, InerException
 from common.utils import Singleton
@@ -54,8 +54,9 @@ class CameraTools(object):
         命令解析
         :cmd:命令内容
         """
-        # TODO: 完成命令解析
-        self.queue.put(cmd)
+        check, pos, name = cmd.split(";")
+        self.queue.put(name)
+        watcher.notice(EVENT.EVT_CAMERA, name)
 
     def receive(self):
         """ 消息接收线程 """
@@ -64,7 +65,7 @@ class CameraTools(object):
             if cmd == '':
                 self._reconnect()
             else:
-                self.decode_cmd(cmd)
+                self.decode_cmd(cmd.strip())
 
     def _reconnect(self):
         """ 重连函数 """
@@ -77,5 +78,5 @@ class CameraTools(object):
             self.server.connect(("localhost", self.port))
         except socket.error:
             log.error("socket connect error")
-            evt_watcher.notice(EVENT.PROGRAM_ERROR, "socket connect error")
+            watcher.notice(EVENT.PROGRAM_ERROR, "socket connect error")
             raise InerException("socket connect error", __file__)

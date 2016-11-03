@@ -5,7 +5,7 @@
 import threading
 import serial
 
-from context import log, evt_watcher
+from context import log, watcher
 
 from common.defines import EVENT, InerException
 from common.utils import Singleton
@@ -63,7 +63,7 @@ class BoardTools(object):
 
         if cm_type == 'AA':
             if cmd == 'urgency':
-                evt_watcher.notice(EVENT.EVT_URGENCY, None)
+                watcher.notice(EVENT.EVT_URGENCY, None)
         elif cm_type == 'AB':
             for key, code in EXCEPTION:
                 if is_exception(cmd, code):

@@ -87,6 +87,15 @@ class ListTable(NoTitleGrid):
         for index, label in enumerate(labels):
             self.SetCellValue(0, index, label)
 
+    def set_data(self, datas):
+        """
+        设置列表数据
+        :param datas:数据列表
+        return None
+        """
+        for index, data in enumerate(datas):
+            self.set_cell(index, data)
+
     def set_cell(self, row, values):
         """
         设置列表制定行的值
