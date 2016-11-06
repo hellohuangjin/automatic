@@ -41,6 +41,6 @@ class EVENT(Enum):
 
 class LOGLEVER(Enum):
     """ 日志级别 """
-    info = 0
-    warning = 1
-    error = 2
+    INFO = 0
+    WARNING = 1
+    ERROR = 2

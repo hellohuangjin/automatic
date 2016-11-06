@@ -7,24 +7,11 @@ import os
 import wx
 import wx.grid
 
-from context import PRJ_PATH, server, watcher
-
 from common.defines import EVENT
 
+from context import PRJ_PATH,server, watcher
 from gui.custome import LabelTable, ListTable, Button
 from gui.diolag import SelectDiolag, ImageExplore, LoginDiolag
-
-
-class MainApp(wx.App):
-    """" Application """
-
-    def OnInit(self):
-        """覆盖父类方法，初始化显示"""
-        frame = MainFrame(parent=None, title=u"自动分拣")
-        frame.SetSize((1366, 768))
-        frame.MoveXY(20, 20)
-        frame.Show(True)
-        return True
 
 
 class MainFrame(wx.Frame):
@@ -70,13 +57,13 @@ class MainFrame(wx.Frame):
         :param msg:错误信息
         :return None
         """
-        self.Hide()
-        err_app = wx.App()
-        err_frame = wx.Frame()
-        dlg = wx.MessageDialog(err_frame, msg, u"程序错误", wx.OK | wx.ICON_ERROR)
-        dlg.ShowModal()
-        err_frame.Show(True)
-        err_app.MainLoop()
+        # self.Hide()
+        # err_app = wx.App()
+        # err_frame = wx.Frame()
+        # dlg = wx.MessageDialog(err_frame, msg, u"程序错误", wx.OK | wx.ICON_ERROR)
+        # dlg.ShowModal()
+        # err_frame.Show(True)
+        # err_app.MainLoop()
         print "program error", msg
 
 
@@ -85,21 +72,20 @@ class ListPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, size=(476, 600))
-
         self.list = ListTable(self)
         self.list.SetSize((476, 600))
-        self.list.set_label(["id", u"运单号"])
+        self.list.set_label(["id", u"运单号", u"手机号"])
         self.index = 0
         self.data = list()
-        watcher.attach(EVENT.EVT_CAMERA, self.new_data)
+        watcher.attach(EVENT.REG_PHONE, self.new_data)
 
     def new_data(self, msg):
         """ 添加新纪录 """
         self.index += 1
-        if len(self.data) > 16:
+        if len(self.data) > 10:
             self.data.pop()
-        code = msg.split(",")
-        self.data.insert(0, (self.index, code[0]))
+        bar, phone = msg
+        self.data.insert(0, (str(self.index), bar, phone))
         self.list.set_data(self.data)
 
 
@@ -136,9 +122,10 @@ class InfoPanel(wx.Panel):
 
     def __init__(self, parent):
         super(InfoPanel, self).__init__(parent)
-        self.img = wx.NullBitmap
+        self.img = None
 
         self.express_img = wx.BitmapButton(self, wx.ID_ANY, wx.NullBitmap, size=(300, 246))
+        self.img = self.express_img
 
         labels = [u"快递公司", u"接驳批次", u"快件总数", u"接驳数", u"手机号识别数", u"异常件数"]
 
@@ -157,9 +144,14 @@ class InfoPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def change_img(self, name):
+        """
+        变更显示快递图片
+        :param name:图片名称
+        """
+        print "name", name
         url = "c:/img/"+name+".bmp"
         img = wx.Image(url, wx.BITMAP_TYPE_BMP)
-        self.express_img.SetBitmap(img.ConvertToBitmap())
+        self.img.SetBitmap(img.ConvertToBitmap())
 
     def img_explore(self, event):
         """
@@ -172,6 +164,7 @@ class InfoPanel(wx.Panel):
         dlg.set_img(wx.BitmapFromImage(self.img))
         dlg.SetPosition((478, 150))
         dlg.ShowModal()
+        self.img = self.express_img
         dlg.Destroy()
 
 
@@ -202,7 +195,7 @@ class CtrlPanel(wx.Panel):
 
         self.SetSizer(sizer)
 
-    def on_login(self, event):
+    def on_login(self, _):
         if server.uid:
             login = LoginDiolag(self)
             login.SetPosition((550, 250))
@@ -212,7 +205,7 @@ class CtrlPanel(wx.Panel):
         else:
             server.logout()
 
-    def on_start(self, event):
+    def on_start(self, _):
         """
         设备启动菜单时间处理器
         点击启动菜单时调用该函数，event为必需参数
@@ -226,19 +219,16 @@ class CtrlPanel(wx.Panel):
         if code != wx.ID_OK:
             server.clear_batch()
         else:
-            evt_watcher.notice(EVENT.EVT_START, "start")
+            watcher.publish(EVENT.EVT_START, "start")
 
         select.Destroy()
 
-    def on_pause(self, event):
-        evt_watcher.notice(EVENT.EVT_PAUSE)
+    def on_pause(self, _):
+        watcher.publish(EVENT.EVT_PAUSE, "pause")
 
-    def on_complete(self, event):
-        evt_watcher.notice(EVENT.EVT_COMPLETE, "complete")
+    def on_complete(self, _):
+        watcher.publish(EVENT.EVT_COMPLETE, "complete")
 
-    def on_stop(self, event):
-        evt_watcher.notice(EVENT.EVT_STOP, "stop")
+    def on_stop(self, _):
+        watcher.publish(EVENT.EVT_STOP, "stop")
 
-if __name__ == '__main__':
-    app = MainApp()
-    app.MainLoop()

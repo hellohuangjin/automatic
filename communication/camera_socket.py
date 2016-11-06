@@ -6,24 +6,22 @@ python socket 通信模块
 import socket
 import threading
 
-from context import log, watcher
 
 from common.defines import EVENT, InerException
-from common.utils import Singleton
+
+from context import watcher
 
 
 class CameraTools(object):
     """ 视觉系统通信工具类 """
 
-    __metaclass__ = Singleton
-
-    def __init__(self, mqueue, port):
+    def __init__(self, queue, port):
         """
         初始化
         :param port:端口
         :return None
         """
-        self.queue = mqueue
+        self.queue = queue
         self.port = port
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.task = None
@@ -54,9 +52,15 @@ class CameraTools(object):
         命令解析
         :cmd:命令内容
         """
-        check, pos, name = cmd.split(";")
-        self.queue.put(name)
-        watcher.notice(EVENT.EVT_CAMERA, name)
+        if cmd == 'Ready':
+            pass
+        else:
+            check, pos, name = cmd.split(";")
+            if check == '0':
+                pass
+            else:
+                self.queue.put((pos, name))
+                # watcher.publish(EVENT.EVT_CAMERA, name)
 
     def receive(self):
         """ 消息接收线程 """
@@ -77,6 +81,6 @@ class CameraTools(object):
         try:
             self.server.connect(("localhost", self.port))
         except socket.error:
-            log.error("socket connect error")
-            watcher.notice(EVENT.PROGRAM_ERROR, "socket connect error")
+            watcher.log_error("socket connetc errot")
+            watcher.publish("socket connect error")
             raise InerException("socket connect error", __file__)

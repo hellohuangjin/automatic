@@ -71,9 +71,10 @@ class LabelTable(NoTitleGrid):
 class ListTable(NoTitleGrid):
     """ 列表 """
     def __init__(self, parent):
-        super(ListTable, self).__init__(parent, 14, 2)
-        self.SetColSize(0, 100)
-        self.SetColSize(1, 300)
+        super(ListTable, self).__init__(parent, 14, 3)
+        self.SetColSize(0, 50)
+        self.SetColSize(1, 250)
+        self.SetColSize(2, 176)
         font = wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.SetDefaultCellFont(font)
         self.SetDefaultRowSize(50)
@@ -94,7 +95,7 @@ class ListTable(NoTitleGrid):
         return None
         """
         for index, data in enumerate(datas):
-            self.set_cell(index, data)
+            self.set_cell(index+1, data)
 
     def set_cell(self, row, values):
         """
@@ -102,6 +103,7 @@ class ListTable(NoTitleGrid):
         :param row:指定行
         :param values:需要设置的值，（id, num)
         """
-        _id, num = values
+        _id, bar, phone = values
         self.SetCellValue(row, 0, _id)
-        self.SetCellValue(row, 1, num)
+        self.SetCellValue(row, 1, bar)
+        self.SetCellValue(row, 2, phone)

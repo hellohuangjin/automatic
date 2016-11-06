@@ -3,7 +3,7 @@ import time
 import socket
 
 host = "localhost"
-port = 9990
+port = 8500
 tcp = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 tcp.bind(("localhost", port))
 tcp.listen(1)
@@ -12,7 +12,7 @@ while True:
     print "client", addr
     while True:
         try:
-            con.sendall("from socket")
+            con.sendall("1;23,45,67,89;1234567890,11035678\n")
         except socket.error:
             break
         time.sleep(10)

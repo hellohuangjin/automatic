@@ -8,14 +8,11 @@ import hashlib
 
 import requests
 
-from common.utils import Singleton
-from common.defines import InerException
+from common.defines import InerException, LOGLEVER
 
 
 class Server(object):
     """服务器通信工具类"""
-
-    __metaclass__ = Singleton
 
     def __init__(self):
         self.base_url = "http://10.0.1.246:8888"
@@ -29,6 +26,7 @@ class Server(object):
         self.sid = None
         self.express_list = None
         self.selected = dict()
+        # self.event = intermediary.queue
 
     def login(self, name, password):
         """
@@ -137,8 +135,6 @@ class Server(object):
             rsp = requests.post(url, data=params)
         except requests.RequestException as e:
             # 使用全局数据，避免循环导入
-            from context import log
-            log.error(str(e))
             raise InerException("http request error", __file__)
         else:
             content = json.loads(rsp.content)

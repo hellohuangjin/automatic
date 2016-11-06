@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import wx
-
 from context import server
-
-from custome import Text, Button
+from gui.custome import Text, Button
 
 
 class LoginDiolag(wx.Dialog):
@@ -42,12 +40,12 @@ class LoginDiolag(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.clean, button_clean)
         self.Bind(wx.EVT_BUTTON, self.login, button_login)
 
-    def clean(self, event):
+    def clean(self, _):
         """清除"""
         self.name.Clear()
         self.password.Clear()
 
-    def login(self, event):
+    def login(self, _):
         name = self.name.GetValue()
         password = self.password.GetValue()
         if name != "" and password != "":
@@ -117,7 +115,7 @@ class SelectDiolag(wx.Dialog):
 
         panel.SetSizer(sizer)
 
-    def get_batch_list(self, event):
+    def get_batch_list(self, _):
         index = self.company.GetSelection()
         if index != 0:
             self.batch_list = server.get_batch_list(self.express_list[index-1]['id'])
@@ -126,12 +124,12 @@ class SelectDiolag(wx.Dialog):
                 print "batch", batch
                 self.batch.Append(batch['batch_date']+str(batch['seq_no']))
 
-    def select_batch(self, event):
+    def select_batch(self, _):
         index = self.batch.GetSelection()
         batch_id = self.batch_list[index]['id']
         server.selected['batch_id'] = batch_id
 
-    def add_batch(self, event):
+    def add_batch(self, _):
         body = server.batch_pre_add()
         if body:
             dlg = wx.MessageDialog(self,

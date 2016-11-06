@@ -5,20 +5,20 @@
 import time
 from multiprocessing import Process, Queue
 
-from common.defines import TYPE
+import wx
+from context import watcher
 
-from context import watcher, log
-
+from common.defines import EVENT
 from communication.camera_socket import CameraTools
 from communication.board_serial import BoardTools
 
-from gui.window import MainApp
+from gui.window import MainFrame
 
 
 class Recognize(Process):
     """识别进程类"""
 
-    def __init__(self, args):
+    def __init__(self, queue):
         """
         初始化
         :param mqueue:文件队列
@@ -26,35 +26,39 @@ class Recognize(Process):
         :return None
         """
         Process.__init__(self)
-        mqueue, name, _watcher, _log = args
-        self.queue = mqueue
-        self.name = name
+        self.queue = queue
 
     def run(self):
         """执行函数"""
         while True:
-            img = self.queue.get()
-            if img == 'quit':
-                print "quit", self.name
-                break
-            print "start task", img, self.name
+            rect, name = self.queue.get()
+            print "img", name
+            watcher.publish(EVENT.REG_PHONE, (name.split(",")[0], "15810305071"))
             time.sleep(0.5)
+
 
 def main():
     """main函数"""
+    app = wx.App()
 
-    app = MainApp()
     queue = Queue()
+
+    watcher.daemon = True
+    watcher.start()
+
     for i in range(2):
-        reg = Recognize(args=(queue, str(i), watcher, log,))
+        reg = Recognize(queue)
         reg.daemon = True
         reg.start()
 
     camera = CameraTools(queue, 8500)
     camera.start_monitor()
 
-    board = BoardTools(queue, 9600)
-    board.start_monitor()
+    # board = BoardTools(intermediary, 9600)
+    # board.start_monitor()
+
+    frame = MainFrame(parent=None, title=u"自动分拣")
+    frame.ShowFullScreen(True)
 
     app.MainLoop()
 

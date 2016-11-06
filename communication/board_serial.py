@@ -5,10 +5,9 @@
 import threading
 import serial
 
-from context import log, watcher
+from context import watcher
 
 from common.defines import EVENT, InerException
-from common.utils import Singleton
 
 EXCEPTION = {"NORMAL": 0x0000, "board": 0x0001, "visor": 0x0002, "485": 0x0004, "conveyor": 0x0008}
 
@@ -16,17 +15,15 @@ EXCEPTION = {"NORMAL": 0x0000, "board": 0x0001, "visor": 0x0002, "485": 0x0004, 
 class BoardTools(object):
     """ 通过串口发送接收命令 """
 
-    __metaclass__ = Singleton
-
-    def __init__(self, port, baudrate):
+    def __init__(self):
         """
         初始化函数
         :param port:端口
         :param baudrate:波特率
         :return None
         """
-        self.port = port
-        self.baudrate = baudrate
+        self.port = "COM5"
+        self.baudrate = 9600
         self.serial = None
         self.task = None
 
@@ -63,7 +60,7 @@ class BoardTools(object):
 
         if cm_type == 'AA':
             if cmd == 'urgency':
-                watcher.notice(EVENT.EVT_URGENCY, None)
+                watcher.publish(EVENT.EVT_URGENCY, None)
         elif cm_type == 'AB':
             for key, code in EXCEPTION:
                 if is_exception(cmd, code):
@@ -87,7 +84,7 @@ class BoardTools(object):
         try:
             self.serial = serial.Serial(self.port, self.baudrate)
         except serial.SerialException:
-            log.error("serial connect error")
+            watcher.log_error("erial connect error")
             raise InerException("serial content error", __file__)
 
 
