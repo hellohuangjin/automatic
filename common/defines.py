@@ -37,6 +37,8 @@ class EVENT(Enum):
     EVT_COMPLETE = 9
     EVT_START = 10
     EVT_CAMERA = 11
+    SERIAL_CMD = 12
+
 
 
 class LOGLEVER(Enum):

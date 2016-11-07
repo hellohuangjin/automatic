@@ -8,7 +8,7 @@ import hashlib
 
 import requests
 
-from common.defines import InerException, LOGLEVER
+from common.defines import InerException
 
 
 class Server(object):
@@ -24,9 +24,7 @@ class Server(object):
         self.logis = None
         self.uid = None
         self.sid = None
-        self.express_list = None
         self.selected = dict()
-        # self.event = intermediary.queue
 
     def login(self, name, password):
         """
@@ -46,19 +44,19 @@ class Server(object):
         self.logis = None
         self.uid = None
         self.sid = None
-        self.express_list = None
         self.clear_batch()
 
     def get_express_list(self):
+        """ 获取物流中心下的所有快递公司 """
         url = self.base_url+self.url['express']
         params = {'ts': int(time.time()*1000),
                   'sn': "scanner",
                   'logis_id': self.logis['id'],
                   'uid': self.uid,
                   'sid': self.sid}
-        self.express_list = self.execute_request(url, self.gen_signer(params))
+        express_list = self.execute_request(url, self.gen_signer(params))
 
-        return self.express_list
+        return express_list
 
     def get_batch_list(self, express_id):
         self.selected["express_id"] = express_id
@@ -135,6 +133,8 @@ class Server(object):
             rsp = requests.post(url, data=params)
         except requests.RequestException as e:
             # 使用全局数据，避免循环导入
+            from context import watcher
+            watcher.log_error(str(e))
             raise InerException("http request error", __file__)
         else:
             content = json.loads(rsp.content)

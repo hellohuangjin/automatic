@@ -9,15 +9,41 @@ import wx.grid
 
 from common.defines import EVENT
 
-from context import PRJ_PATH,server, watcher
+from context import PRJ_PATH, server, watcher
 from gui.custome import LabelTable, ListTable, Button
 from gui.diolag import SelectDiolag, ImageExplore, LoginDiolag
+
+
+class Window(object):
+    """GUI"""
+
+    def __init__(self):
+
+        self.app = wx.App()
+        self.frame = MainFrame(None)
+        watcher.attach(EVENT.PROGRAM_ERROR, self.program_error)
+
+    def program_error(self, msg):
+        """程序启动错误监听"""
+        self.frame = ErrorFrame(parent=None, msg=msg)
+        print "error", msg
+
+    def show(self):
+        """显示界面"""
+        self.frame.ShowFullScreen(True)
+        self.app.MainLoop()
+
+class ErrorFrame(wx.Frame):
+    """错误信息界面"""
+
+    def __init__(self, parent, msg=None):
+        wx.Frame.__init__(self, parent, title=u"程序错误")
 
 
 class MainFrame(wx.Frame):
     """ 主界面 """
 
-    def __init__(self, parent, title):
+    def __init__(self, parent):
         """
         如果父元素为None(默认为None, 必须传入),则该frame作为顶级元素，
         title为窗口标题，可以不设置。
@@ -27,7 +53,7 @@ class MainFrame(wx.Frame):
         """
 
         style = wx.DEFAULT_FRAME_STYLE ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX)
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=title, size=(1366, 768), style=style)
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"自动分拣", size=(1366, 768), style=style)
 
         watcher.attach(EVENT.PROGRAM_ERROR, self.program_error)
 
@@ -196,39 +222,39 @@ class CtrlPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def on_login(self, _):
-        if server.uid:
+        if server.uid is None:
             login = LoginDiolag(self)
             login.SetPosition((550, 250))
             login.ShowModal()
-            self.login.SetLabel(u"注销")
+            if server.uid:
+                self.login.SetLabel(u"注销")
             login.Destroy()
         else:
             server.logout()
+            self.login.SetLabel(u"登录")
 
     def on_start(self, _):
         """
         设备启动菜单时间处理器
-        点击启动菜单时调用该函数，event为必需参数
-        :param event:事件类型
-        :return None
+        点击启动菜单时调用该函数
         """
+        server.clear_batch()
         express_list = server.get_express_list()
         select = SelectDiolag(self, u"选择窗口", express_list)
         select.SetPosition((400, 200))
-        code = select.ShowModal()
-        if code != wx.ID_OK:
-            server.clear_batch()
+        select.ShowModal()
+        if server.selected:
+            watcher.publish(EVENT.SERIAL_CMD, "AA05start\n")
         else:
-            watcher.publish(EVENT.EVT_START, "start")
-
+            server.clear_batch()
         select.Destroy()
 
     def on_pause(self, _):
-        watcher.publish(EVENT.EVT_PAUSE, "pause")
+        watcher.publish(EVENT.SERIAL_CMD, "AA05pause\n")
 
     def on_complete(self, _):
-        watcher.publish(EVENT.EVT_COMPLETE, "complete")
+        watcher.publish(EVENT.EVT_COMPLETE, "AA04stop\n")
 
     def on_stop(self, _):
-        watcher.publish(EVENT.EVT_STOP, "stop")
+        watcher.publish(EVENT.EVT_STOP, "AA08shutdown\n")
 

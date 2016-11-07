@@ -82,5 +82,5 @@ class CameraTools(object):
             self.server.connect(("localhost", self.port))
         except socket.error:
             watcher.log_error("socket connetc errot")
-            watcher.publish("socket connect error")
+            watcher.publish(EVENT.PROGRAM_ERROR, "socket connect error")
             raise InerException("socket connect error", __file__)

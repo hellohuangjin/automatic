@@ -23,9 +23,10 @@ class BoardTools(object):
         :return None
         """
         self.port = "COM5"
-        self.baudrate = 9600
+        self.baudrate = 115200
         self.serial = None
         self.task = None
+        watcher.attach(EVENT.SERIAL_CMD, self._send_command)
 
     def start_monitor(self):
         """
@@ -37,7 +38,7 @@ class BoardTools(object):
             self.task.setDaemon(True)
             self.task.start()
 
-    def send_command(self, command):
+    def _send_command(self, command):
         """
         发送命令
         :command: 命令内容
@@ -48,7 +49,8 @@ class BoardTools(object):
         except serial.SerialException:
             self._connect()
 
-    def decode_cmd(self, content):
+    @staticmethod
+    def decode_cmd(content):
         """
         解析命令
         :param content:命令内容

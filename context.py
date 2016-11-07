@@ -24,6 +24,9 @@ class _Watcher(Thread):
         self._event = defaultdict(list)
         self._log = log
 
+    def original_cmd(self):
+        return self._queue
+
     def attach(self, event_type, callback):
         """
         添加监听器
@@ -37,13 +40,13 @@ class _Watcher(Thread):
         self._put_queue("NOTICE", event_type, msg)
 
     def log_info(self, msg):
-        self._put_queue(("LOG", LOGLEVER.INFO, msg))
+        self._put_queue("LOG", LOGLEVER.INFO, msg)
 
     def log_warning(self, msg):
-        self._put_queue(("LOG", LOGLEVER.WARNING, msg))
+        self._put_queue("LOG", LOGLEVER.WARNING, msg)
 
     def log_error(self, msg):
-        self._put_queue(("LOG", LOGLEVER.ERROR, msg))
+        self._put_queue("LOG", LOGLEVER.ERROR, msg)
 
     def _put_queue(self, target, type, msg):
         self._queue.put((target, type, msg))
@@ -81,7 +84,8 @@ class _Watcher(Thread):
             if target == 'NOTICE':
                 self._notice(type, msg)
             elif target == 'LOG':
-                self._logger(type, msg)
+                # self._logger(type, msg)
+                pass
 
 # 项目跟目录
 PRJ_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -94,6 +98,3 @@ server = Server()
 
 # 全局事件监听器
 watcher = _Watcher()
-
-
-
