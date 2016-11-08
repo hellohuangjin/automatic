@@ -244,17 +244,16 @@ class CtrlPanel(wx.Panel):
         select.SetPosition((400, 200))
         select.ShowModal()
         if server.selected:
-            watcher.publish(EVENT.SERIAL_CMD, "AA05start\n")
+            watcher.publish(EVENT.SERIAL_CMD, "AA05start")
         else:
             server.clear_batch()
         select.Destroy()
 
     def on_pause(self, _):
-        watcher.publish(EVENT.SERIAL_CMD, "AA05pause\n")
+        watcher.publish(EVENT.SERIAL_CMD, "AA05pause")
 
     def on_complete(self, _):
-        watcher.publish(EVENT.EVT_COMPLETE, "AA04stop\n")
+        watcher.publish(EVENT.EVT_COMPLETE, "AA04stop")
 
     def on_stop(self, _):
-        watcher.publish(EVENT.EVT_STOP, "AA08shutdown\n")
-
+        watcher.publish(EVENT.EVT_STOP, "AA08shutdown")

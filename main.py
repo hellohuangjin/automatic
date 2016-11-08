@@ -4,7 +4,7 @@
 import os
 from multiprocessing import Process, Queue
 
-# from processor import Processer
+# from processor import Processor
 
 from context import watcher, PRJ_PATH
 
@@ -32,12 +32,12 @@ class Recognize(Process):
     def run(self):
         """执行函数"""
         # lang = os.path.join(PRJ_PATH, "source/tesseract/")
-        # reg_process = Processer(lang)
+        # reg_process = Processor(lang)
         while True:
             rect, name = self.queue.get()
             # path = "c:/img/"+name+".bmp"
             # width, height, xdim, ydim = rect.split(',')
-            # phone = reg_process.extract_phone(path, xdim, ydim, width, height, 1)
+            # phone = reg_process.extract_phone(path, int(xdim), int(ydim), int(width), int(height), 1)
             phone = "12345678901"
             self.notice.put(("NOTICE", EVENT.REG_PHONE, (name.split(",")[0], phone)))
 

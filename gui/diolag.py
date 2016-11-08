@@ -106,12 +106,12 @@ class SelectDiolag(wx.Dialog):
 
         bottom = wx.BoxSizer(wx.HORIZONTAL)
 
-        new_button = Button(panel, u"新建批次", (100, 60), "white")
+        new_button = Button(panel, u"新建批次", (100, 80), "white")
         new_button.Bind(wx.EVT_BUTTON, self.add_batch)
-        conform_button = Button(panel, u"开始接驳", (100, 60), 'white')
+        conform_button = Button(panel, u"开始接驳", (100, 80), 'white')
         conform_button.Bind(wx.EVT_BUTTON, self.start_accept)
         bottom.Add(new_button, 0)
-        bottom.Add(conform_button, 0, wx.LEFT, 100)
+        bottom.Add(conform_button, 0, wx.LEFT, 60)
 
         sizer.Add(bottom, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 50)
 
