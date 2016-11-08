@@ -31,7 +31,7 @@ class Recognize(Process):
 
     def run(self):
         """执行函数"""
-        # lang = os.path.join(PRJ_PATH, "source/tesseract/")
+        # lang = os.path.join(PRJ_PATH, "source/")
         # reg_process = Processor(lang)
         while True:
             rect, name = self.queue.get()
