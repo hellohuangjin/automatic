@@ -98,9 +98,9 @@ class ListPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, size=(476, 600))
-        self.list = ListTable(self)
-        self.list.SetSize((476, 600))
-        self.list.set_label(["id", u"运单号", u"手机号"])
+        self.table = ListTable(self)
+        self.table.SetSize((476, 600))
+        self.table.set_label(["id", u"运单号", u"手机号"])
         self.index = 0
         self.data = list()
         watcher.attach(EVENT.REG_PHONE, self.new_data)
@@ -112,7 +112,7 @@ class ListPanel(wx.Panel):
             self.data.pop()
         bar, phone = msg
         self.data.insert(0, (str(self.index), bar, phone))
-        self.list.set_data(self.data)
+        self.table.set_data(self.data)
 
 
 class StatusPanel(wx.Panel):
@@ -124,6 +124,7 @@ class StatusPanel(wx.Panel):
         image = wx.Image(img_url, wx.BITMAP_TYPE_PNG).Scale(800, 350)
         self.static_img = wx.StaticBitmap(self, wx.ID_ANY, image.ConvertToBitmap(), size=(800, 350))
         watcher.attach(EVENT.EVT_PAUSE, self.change_status)
+        self.ClearBackground()
 
     def change_status(self, msg):
         """
@@ -253,7 +254,7 @@ class CtrlPanel(wx.Panel):
         watcher.publish(EVENT.SERIAL_CMD, "AA05pause")
 
     def on_complete(self, _):
-        watcher.publish(EVENT.EVT_COMPLETE, "AA04stop")
+        watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
 
     def on_stop(self, _):
-        watcher.publish(EVENT.EVT_STOP, "AA08shutdown")
+        watcher.publish(EVENT.SERIAL_CMD, "AA08shutdown")

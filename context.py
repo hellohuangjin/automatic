@@ -22,9 +22,14 @@ class _Watcher(Thread):
         Thread.__init__(self)
         self._queue = Queue()
         self._event = defaultdict(list)
-        self._log = log
+        self._log = None
 
     def original_cmd(self):
+        """
+        使用原始队列
+        修复windows bug
+        在windows中多进程和多线程不能传入对象（queue, event等多进程支持除外)
+        """
         return self._queue
 
     def attach(self, event_type, callback):
@@ -37,15 +42,23 @@ class _Watcher(Thread):
         self._event[event_type].append(callback)
 
     def publish(self, event_type, msg):
+        """
+        发布通知
+        :param event_type:通知类型
+        :param msg:通知内容
+        """
         self._put_queue("NOTICE", event_type, msg)
 
     def log_info(self, msg):
+        """info级别日志"""
         self._put_queue("LOG", LOGLEVER.INFO, msg)
 
     def log_warning(self, msg):
+        """warning级别日志"""
         self._put_queue("LOG", LOGLEVER.WARNING, msg)
 
     def log_error(self, msg):
+        """error级别日志"""
         self._put_queue("LOG", LOGLEVER.ERROR, msg)
 
     def _put_queue(self, target, type, msg):
@@ -79,6 +92,7 @@ class _Watcher(Thread):
 
     def run(self):
         """进程执行方法"""
+        self._log = Logger(PRJ_PATH)
         while True:
             target, type, msg= self._queue.get()
             if target == 'NOTICE':
@@ -89,9 +103,6 @@ class _Watcher(Thread):
 
 # 项目跟目录
 PRJ_PATH = os.path.dirname(os.path.abspath(__file__))
-
-# 自定义日志打印
-log = Logger(PRJ_PATH)
 
 # 全局http请求数据
 server = Server()

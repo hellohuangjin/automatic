@@ -21,13 +21,13 @@ class LoginDiolag(wx.Dialog):
 
         font = wx.Font(20, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
-        name_label = Text(panel, u"用户名", size=(75, 30), style=wx.TE_CENTER, font=20)
+        name_label = Text(panel, u"用户名", size=(75, 30), style=wx.TE_CENTER, font=18)
         self.name = wx.TextCtrl(panel, wx.ID_ANY, size=(200, 30), style=wx.TE_CENTER)
         self.name.SetFont(font)
         name_sizer.Add(name_label, 0, wx.EXPAND | wx.TOP | wx.LEFT, 25)
         name_sizer.Add(self.name, 0, wx.EXPAND | wx.TOP | wx.LEFT, 25)
 
-        password_label = Text(panel, u"密  码", size=(75, 30), style=wx.TE_CENTER, font=20)
+        password_label = Text(panel, u"密  码", size=(75, 30), style=wx.TE_CENTER, font=18)
         self.password = wx.TextCtrl(panel, wx.ID_ANY, size=(200, 30), style=wx.TE_PASSWORD|wx.TE_CENTER)
         self.password.SetFont(font)
         pass_sizer.Add(password_label, 0, wx.TOP | wx.LEFT, 25)
