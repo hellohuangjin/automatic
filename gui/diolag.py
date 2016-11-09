@@ -158,7 +158,7 @@ class ImageExplore(wx.Dialog):
         panel = wx.Panel(self)
         self.img = wx.StaticBitmap(panel, -1, wx.NullBitmap)
 
-    def set_img(self, bitmap):
+    def SetBitmap(self, bitmap):
         """
         更改显示图片，bitmap为wx框架图片
         :param bitmap:显示图片

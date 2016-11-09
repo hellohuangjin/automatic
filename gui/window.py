@@ -33,6 +33,7 @@ class Window(object):
         self.frame.ShowFullScreen(True)
         self.app.MainLoop()
 
+
 class ErrorFrame(wx.Frame):
     """错误信息界面"""
 
@@ -52,10 +53,15 @@ class MainFrame(wx.Frame):
         :return None
         """
 
-        style = wx.DEFAULT_FRAME_STYLE ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX)
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"自动分拣", size=(1366, 768), style=style)
-
-        watcher.attach(EVENT.PROGRAM_ERROR, self.program_error)
+        style = wx.DEFAULT_FRAME_STYLE ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX |
+                                          wx.MAXIMIZE_BOX)
+        wx.Frame.__init__(
+            self,
+            parent,
+            id=wx.ID_ANY,
+            title=u"自动分拣",
+            size=(1366, 768),
+            style=style)
 
         self.status_panel = StatusPanel(self)
         self.info_panel = InfoPanel(self)
@@ -69,28 +75,15 @@ class MainFrame(wx.Frame):
         left.Add(self.ctrl_panel, 0, wx.EXPAND | wx.TOP, 30)
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(left, wx.ID_ANY, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM, 30)
-        sizer.Add(self.list_panel, wx.ID_ANY, wx.EXPAND | wx.RIGHT | wx.TOP | wx.LEFT, 30)
+        sizer.Add(left, wx.ID_ANY, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM,
+                  30)
+        sizer.Add(self.list_panel, wx.ID_ANY, wx.EXPAND | wx.RIGHT | wx.TOP |
+                  wx.LEFT, 30)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
 
         self.Show(True)
-
-    def program_error(self, msg):
-        """
-        程序初始化错误处理
-        :param msg:错误信息
-        :return None
-        """
-        # self.Hide()
-        # err_app = wx.App()
-        # err_frame = wx.Frame()
-        # dlg = wx.MessageDialog(err_frame, msg, u"程序错误", wx.OK | wx.ICON_ERROR)
-        # dlg.ShowModal()
-        # err_frame.Show(True)
-        # err_app.MainLoop()
-        print "program error", msg
 
 
 class ListPanel(wx.Panel):
@@ -110,8 +103,8 @@ class ListPanel(wx.Panel):
         self.index += 1
         if len(self.data) > 10:
             self.data.pop()
-        bar, phone = msg
-        self.data.insert(0, (str(self.index), bar, phone))
+        bar_code, phone = msg
+        self.data.insert(0, (str(self.index), bar_code, phone))
         self.table.set_data(self.data)
 
 
@@ -122,7 +115,8 @@ class StatusPanel(wx.Panel):
         super(StatusPanel, self).__init__(parent)
         img_url = os.path.join(PRJ_PATH, "source/img/ready.png")
         image = wx.Image(img_url, wx.BITMAP_TYPE_PNG).Scale(800, 350)
-        self.static_img = wx.StaticBitmap(self, wx.ID_ANY, image.ConvertToBitmap(), size=(800, 350))
+        self.static_img = wx.StaticBitmap(
+            self, wx.ID_ANY, image.ConvertToBitmap(), size=(800, 350))
         watcher.attach(EVENT.EVT_PAUSE, self.change_status)
         self.ClearBackground()
 
@@ -151,7 +145,8 @@ class InfoPanel(wx.Panel):
         super(InfoPanel, self).__init__(parent)
         self.img = None
 
-        self.express_img = wx.BitmapButton(self, wx.ID_ANY, wx.NullBitmap, size=(300, 246))
+        self.express_img = wx.BitmapButton(
+            self, wx.ID_ANY, wx.NullBitmap, size=(300, 246))
         self.img = self.express_img
 
         labels = [u"快递公司", u"接驳批次", u"快件总数", u"接驳数", u"手机号识别数", u"异常件数"]
@@ -159,6 +154,7 @@ class InfoPanel(wx.Panel):
         self.table = LabelTable(self)
         self.table.SetSize((550, 246))
         self.table.set_label(labels)
+        watcher.table_update = self.table.set_data
 
         self.express_img.Bind(wx.EVT_BUTTON, self.img_explore)
 
@@ -175,12 +171,11 @@ class InfoPanel(wx.Panel):
         变更显示快递图片
         :param name:图片名称
         """
-        print "name", name
-        url = "c:/img/"+name+".bmp"
+        url = "c:/img/" + name + ".bmp"
         img = wx.Image(url, wx.BITMAP_TYPE_BMP)
         self.img.SetBitmap(img.ConvertToBitmap())
 
-    def img_explore(self, event):
+    def img_explore(self, _):
         """
         图片点击时触发浏览大图
         :param event:事件类型
@@ -188,7 +183,7 @@ class InfoPanel(wx.Panel):
         """
 
         dlg = ImageExplore(self, u"快递面单")
-        dlg.set_img(wx.BitmapFromImage(self.img))
+        dlg.SetBitmap(wx.BitmapFromImage(self.img))
         dlg.SetPosition((478, 150))
         dlg.ShowModal()
         self.img = self.express_img
@@ -223,6 +218,9 @@ class CtrlPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def on_login(self, _):
+        """
+        登录菜单
+        """
         if server.uid is None:
             login = LoginDiolag(self)
             login.SetPosition((550, 250))
@@ -239,22 +237,26 @@ class CtrlPanel(wx.Panel):
         设备启动菜单时间处理器
         点击启动菜单时调用该函数
         """
-        server.clear_batch()
-        express_list = server.get_express_list()
-        select = SelectDiolag(self, u"选择窗口", express_list)
-        select.SetPosition((400, 200))
-        select.ShowModal()
-        if server.selected:
-            watcher.publish(EVENT.SERIAL_CMD, "AA05start")
-        else:
-            server.clear_batch()
-        select.Destroy()
+        if not server.selected:
+            express_list = server.get_express_list()
+            select = SelectDiolag(self, u"选择窗口", express_list)
+            select.SetPosition((400, 200))
+            select.ShowModal()
+            if server.selected:
+                watcher.publish(EVENT.SERIAL_CMD, "AA05start")
+            else:
+                server.clear_batch()
+            select.Destroy()
 
     def on_pause(self, _):
-        watcher.publish(EVENT.SERIAL_CMD, "AA05pause")
+        """ 暂停 """
+        watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
 
     def on_complete(self, _):
+        """ 完成接驳 """
+        server.clear_batch()
         watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
 
     def on_stop(self, _):
+        """ 关机 """
         watcher.publish(EVENT.SERIAL_CMD, "AA08shutdown")

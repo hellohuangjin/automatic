@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """ 主线程， UI """
 import os
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Manager
 
 # from processor import Processor
 

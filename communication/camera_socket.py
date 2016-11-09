@@ -60,7 +60,9 @@ class CameraTools(object):
                 pass
             else:
                 self.queue.put((pos, name))
-                # watcher.publish(EVENT.EVT_CAMERA, name)
+                watcher.publish(EVENT.EVT_CAMERA, name)
+                watcher.info[3] += 1
+            watcher.info[2] += 1
 
     def receive(self):
         """ 消息接收线程 """

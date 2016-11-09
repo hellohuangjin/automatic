@@ -58,6 +58,15 @@ class LabelTable(NoTitleGrid):
         for index, label in enumerate(labels):
             self.SetCellValue(index, 0, label)
 
+    def set_data(self, data):
+        """
+        设置表格数据
+        :param data:数据列表
+        :return None
+        """
+        for index, value in enumerate(data):
+            self.set_cell(index, value)
+
     def set_cell(self, row, value):
         """
         设置指定行单元格内容

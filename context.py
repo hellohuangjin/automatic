@@ -9,7 +9,7 @@ from collections import defaultdict
 from threading import Thread
 from multiprocessing import Queue
 
-from common.defines import LOGLEVER
+from common.defines import LOGLEVER, EVENT
 from common.utils import Logger
 
 from communication.server_request import Server
@@ -23,6 +23,8 @@ class _Watcher(Thread):
         self._queue = Queue()
         self._event = defaultdict(list)
         self._log = None
+        self.info = ["尚未接驳", "尚未接驳", 0, 0, 0, 0]
+        self.table_update = None
 
     def original_cmd(self):
         """
@@ -48,6 +50,13 @@ class _Watcher(Thread):
         :param msg:通知内容
         """
         self._put_queue("NOTICE", event_type, msg)
+        if event_type == EVENT.EVT_CAMERA:
+            if msg:
+                self.info[4] += 1;
+            else:
+                self.info[5] += 1;
+            self.table_update(self.info)
+
 
     def log_info(self, msg):
         """info级别日志"""
