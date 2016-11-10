@@ -101,7 +101,7 @@ class ListPanel(wx.Panel):
     def new_data(self, msg):
         """ 添加新纪录 """
         self.index += 1
-        if len(self.data) > 10:
+        if len(self.data) > 15:
             self.data.pop()
         bar_code, phone = msg
         self.data.insert(0, (str(self.index), bar_code, phone))
@@ -183,6 +183,7 @@ class InfoPanel(wx.Panel):
         """
 
         dlg = ImageExplore(self, u"快递面单")
+        self.img = dlg
         dlg.SetBitmap(wx.BitmapFromImage(self.img))
         dlg.SetPosition((478, 150))
         dlg.ShowModal()

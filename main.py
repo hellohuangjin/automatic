@@ -36,8 +36,8 @@ class Recognize(Process):
         while True:
             rect, name = self.queue.get()
             # path = "c:/img/"+name+".bmp"
-            # width, height, xdim, ydim = rect.split(',')
-            # phone = reg_process.extract_phone(path, int(xdim), int(ydim), int(width), int(height), 1)
+            # width, height, _, _ = rect.split(',')
+            # phone = reg_process.extract_phone(path, int(width), int(height))
             phone = "12345678901"
             self.notice.put(("NOTICE", EVENT.REG_PHONE, (name.split(",")[0], phone)))
 

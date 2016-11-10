@@ -50,11 +50,11 @@ class _Watcher(Thread):
         :param msg:通知内容
         """
         self._put_queue("NOTICE", event_type, msg)
-        if event_type == EVENT.EVT_CAMERA:
+        if event_type == EVENT.REG_PHONE:
             if msg:
-                self.info[4] += 1;
+                self.info[4] += 1
             else:
-                self.info[5] += 1;
+                self.info[5] += 1
             self.table_update(self.info)
 
 
