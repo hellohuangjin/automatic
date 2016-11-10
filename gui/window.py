@@ -166,7 +166,7 @@ class InfoPanel(wx.Panel):
         sizer.Add(self.table, wx.ID_ANY, wx.EXPAND)
         sizer.Add(self.express_img, wx.ID_ANY, wx.EXPAND | wx.LEFT, 50)
 
-        watcher.attach(EVENT.EVT_CAMERA, self.change_img)
+        # watcher.attach(EVENT.EVT_CAMERA, self.change_img)
 
         self.SetSizer(sizer)
 

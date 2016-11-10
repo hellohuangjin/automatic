@@ -106,9 +106,9 @@ class SelectDiolag(wx.Dialog):
 
         bottom = wx.BoxSizer(wx.HORIZONTAL)
 
-        new_button = Button(panel, u"新建批次", (100, 80), "white")
+        new_button = Button(panel, u"新建批次", (100, 80), "white", font=18)
         new_button.Bind(wx.EVT_BUTTON, self.add_batch)
-        conform_button = Button(panel, u"开始接驳", (100, 80), 'white')
+        conform_button = Button(panel, u"开始接驳", (100, 80), 'white', font=18)
         conform_button.Bind(wx.EVT_BUTTON, self.start_accept)
         bottom.Add(new_button, 0)
         bottom.Add(conform_button, 0, wx.LEFT, 60)
@@ -126,7 +126,7 @@ class SelectDiolag(wx.Dialog):
     def get_batch_list(self, _):
         index = self.company.GetSelection()
         if index != -1:
-            self.batch_list = server.get_batch_list(self.express_list[index-1]['id'])
+            self.batch_list = server.get_batch_list(self.express_list[index]['id'])
             for batch in self.batch_list:
                 self.batch.Append(batch['batch_date']+str(batch['seq_no']))
 
