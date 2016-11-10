@@ -50,13 +50,6 @@ class _Watcher(Thread):
         :param msg:通知内容
         """
         self._put_queue("NOTICE", event_type, msg)
-        if event_type == EVENT.REG_PHONE:
-            if msg:
-                self.info[4] += 1
-            else:
-                self.info[5] += 1
-            self.table_update(self.info)
-
 
     def log_info(self, msg):
         """info级别日志"""
@@ -85,6 +78,14 @@ class _Watcher(Thread):
                 callback()
             else:
                 callback(msg)
+
+        if event_type == EVENT.REG_PHONE:
+            if msg:
+                self.info[4] += 1
+            else:
+                self.info[5] += 1
+            self.table_update(self.info)
+
 
     def _logger(self, log_type, msg):
         """
