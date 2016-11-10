@@ -65,7 +65,9 @@ class LabelTable(NoTitleGrid):
         :return None
         """
         for index, value in enumerate(data):
-            self.set_cell(index, str(value))
+            if isinstance(value, int):
+                value = str(value)
+            self.set_cell(index, value)
 
     def set_cell(self, row, value):
         """

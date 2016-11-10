@@ -25,8 +25,9 @@ class Window(object):
 
     def program_error(self, msg):
         """程序启动错误监听"""
-        self.frame = ErrorFrame(parent=None, msg=msg)
-        print "error", msg
+        self.frame.Close()
+        error = ErrorFrame(parent=None, msg=msg)
+        error.show()
 
     def show(self):
         """显示界面"""
@@ -34,12 +35,15 @@ class Window(object):
         self.app.MainLoop()
 
 
-class ErrorFrame(wx.Frame):
+class ErrorFrame(object):
     """错误信息界面"""
 
     def __init__(self, parent, msg=None):
-        wx.Frame.__init__(self, parent, title=u"程序错误")
+        self.dlg = wx.MessageDialog(parent, msg, u"程序错误", wx.OK | wx.ICON_ERROR)
 
+    def show(self):
+        self.dlg.ShowModal()
+        exit(0)
 
 class MainFrame(wx.Frame):
     """ 主界面 """

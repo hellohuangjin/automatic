@@ -44,8 +44,8 @@ class Recognize(Process):
 
 def main():
     """main函数"""
-    app = Window()
 
+    app = Window()
     queue = Queue()
 
     watcher.daemon = True
@@ -59,8 +59,8 @@ def main():
     camera = CameraTools(queue, 8500)
     camera.start_monitor()
 
-    # board = BoardTools()
-    # board.start_monitor()
+    board = BoardTools()
+    board.start_monitor()
 
     app.show()
 

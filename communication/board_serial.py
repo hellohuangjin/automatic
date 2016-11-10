@@ -9,8 +9,6 @@ from context import watcher
 
 from common.defines import EVENT, InerException
 
-EXCEPTION = {"NORMAL": 0x0000, "board": 0x0001, "visor": 0x0002, "485": 0x0004, "conveyor": 0x0008}
-
 
 class BoardTools(object):
     """ 通过串口发送接收命令 """
@@ -60,13 +58,11 @@ class BoardTools(object):
         length = content[2:4]
         cmd = content[4:length]
 
-        if cm_type == 'AA':
+        if cm_type == 'AB':
             if cmd == 'urgency':
                 watcher.publish(EVENT.EVT_URGENCY, None)
-        elif cm_type == 'AB':
-            for key, code in EXCEPTION:
-                if is_exception(cmd, code):
-                    print "exception", key
+            elif cmd == 'clear':
+                watcher.publish(EVENT.CLEAR, None)
 
     def receive(self):
         """ 消息接收线程 """
@@ -86,10 +82,6 @@ class BoardTools(object):
         try:
             self.serial = serial.Serial(self.port, self.baudrate)
         except serial.SerialException:
-            watcher.log_error("erial connect error")
+            watcher.log_error("serial connect error")
+            watcher.publish(EVENT.PROGRAM_ERROR, "serial connect error")
             raise InerException("serial content error", __file__)
-
-
-def is_exception(content, key):
-    """判断异常种类"""
-    return True if content&key == key else False

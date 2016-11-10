@@ -23,7 +23,7 @@ class _Watcher(Thread):
         self._queue = Queue()
         self._event = defaultdict(list)
         self._log = None
-        self.info = ["尚未接驳", "尚未接驳", 0, 0, 0, 0]
+        self.info = [u"尚未接驳", u"尚未接驳", 0, 0, 0, 0]
         self.table_update = None
 
     def original_cmd(self):

@@ -38,6 +38,7 @@ class EVENT(Enum):
     EVT_START = 10
     EVT_CAMERA = 11
     SERIAL_CMD = 12
+    CLEAR = 13
 
 
 
