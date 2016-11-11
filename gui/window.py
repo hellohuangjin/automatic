@@ -268,6 +268,8 @@ class CtrlPanel(wx.Panel):
             else:
                 server.clear_batch()
             select.Destroy()
+        else:
+            watcher.publish(EVENT.SERIAL_CMD, "AA05start")
 
     def on_pause(self, _):
         """ 暂停 """

@@ -55,8 +55,8 @@ class BoardTools(object):
         :return None
         """
         cm_type = content[:2]
-        length = content[2:4]
-        cmd = content[4:length]
+        length = int(content[2:4])
+        cmd = content[4:length+4]
 
         if cm_type == 'AB':
             if cmd == 'urgency':
@@ -68,7 +68,7 @@ class BoardTools(object):
         """ 消息接收线程 """
         while True:
             cmd = self.serial.readline()
-            self.decode_cmd(cmd)
+            self.decode_cmd(cmd.strip())
 
     def _reconnect(self):
         """重连"""

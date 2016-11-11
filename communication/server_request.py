@@ -35,6 +35,8 @@ class Server(object):
         url = self.base_url+self.url['login']
         params = {'ts': int(time.time()*1000), 'sn': "scanner", 'name': name, 'password': password}
         body = self.execute_request(url, self.gen_signer(params))
+        if not body:
+            return None
         self.sid = body['session']['sid']
         self.uid = body['id']
         return body['logis_list']

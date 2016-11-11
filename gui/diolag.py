@@ -54,15 +54,19 @@ class LoginDiolag(wx.Dialog):
         password = self.password.GetValue()
         if name != "" and password != "":
             logis_list = server.login(name, password)
-            if len(logis_list) > 1:
-                index = self.select_logis([item['name'] for item in logis_list])
-                if index is not None:
-                    server.logis = logis_list[index]
+            if logis_list:
+                if len(logis_list) > 1:
+                    index = self.select_logis([item['name'] for item in logis_list])
+                    if index is not None:
+                        server.logis = logis_list[index]
+                    else:
+                        server.logout()
                 else:
-                    server.logout()
+                    server.logis = logis_list[0]
+                self.Close()
             else:
-                server.logis = logis_list[0]
-            self.Close()
+                dlg = wx.MessageDialog(None, u"错误", u"用户名或密码错误", wx.OK | wx.ICON_ERROR)
+                dlg.ShowModal()
 
     def select_logis(self, logis_names):
         dlg = wx.SingleChoiceDialog(self, u"选择一个物流中心", u"物流中心", logis_names)
@@ -96,6 +100,7 @@ class SelectDiolag(wx.Dialog):
         self.batch.SetFont(font)
 
         self.company.Bind(wx.EVT_COMBOBOX, self.get_batch_list)
+        self.batch.Bind(wx.EVT_COMBOBOX, self.select_batch)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
