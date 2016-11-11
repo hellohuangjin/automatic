@@ -242,7 +242,8 @@ class CtrlPanel(wx.Panel):
         设备启动菜单时间处理器
         点击启动菜单时调用该函数
         """
-        if not server.selected:
+        all_key_in = "batch_id" in server.selected and "express_id" in server.selected
+        if all_key_in:
             express_list = server.get_express_list()
             select = SelectDiolag(self, u"选择窗口", express_list)
             select.SetPosition((400, 200))

@@ -65,7 +65,7 @@ class LoginDiolag(wx.Dialog):
             self.Close()
 
     def select_logis(self, logis_names):
-        dlg = wx.SingleChoiceDialog(self, "选择一个物流中心", "物流中心", logis_names)
+        dlg = wx.SingleChoiceDialog(self, u"选择一个物流中心", u"物流中心", logis_names)
         code = dlg.ShowModal()
 
         if code == wx.ID_OK:
