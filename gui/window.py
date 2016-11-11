@@ -243,12 +243,13 @@ class CtrlPanel(wx.Panel):
         点击启动菜单时调用该函数
         """
         all_key_in = "batch_id" in server.selected and "express_id" in server.selected
-        if all_key_in:
+        if not all_key_in:
             express_list = server.get_express_list()
             select = SelectDiolag(self, u"选择窗口", express_list)
             select.SetPosition((400, 200))
             select.ShowModal()
-            if server.selected:
+            all_key_in = "batch_id" in server.selected and "express_id" in server.selected
+            if all_key_in:
                 watcher.publish(EVENT.SERIAL_CMD, "AA05start")
             else:
                 server.clear_batch()
