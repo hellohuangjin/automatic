@@ -201,6 +201,7 @@ class CtrlPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
+        self.urgency = False
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.start = Button(self, text=u"开始接驳", size=(120, 52), colour='green')
         self.pause = Button(self, u"暂停接驳", (120, 52), 'yellow')
@@ -220,12 +221,23 @@ class CtrlPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.on_stop, self.stop)
         self.Bind(wx.EVT_BUTTON, self.on_login, self.login)
 
+        watcher.attach(EVENT.EVT_URGENCY, self.urgency_event)
+        watcher.attach(EVENT.CLEAR, self.urgency_event)
+
         self.SetSizer(sizer)
+
+    def urgency_event(self, msg):
+        if msg == 'urgency':
+            self.urgency = True
+        elif msg == 'clear':
+            self.urgency = False
 
     def on_login(self, _):
         """
         登录菜单
         """
+        if self.urgency:
+            return
         if server.uid is None:
             login = LoginDiolag(self)
             login.SetPosition((550, 250))
@@ -242,6 +254,8 @@ class CtrlPanel(wx.Panel):
         设备启动菜单时间处理器
         点击启动菜单时调用该函数
         """
+        if self.urgency:
+            return
         all_key_in = "batch_id" in server.selected and "express_id" in server.selected
         if not all_key_in:
             express_list = server.get_express_list()
@@ -257,13 +271,18 @@ class CtrlPanel(wx.Panel):
 
     def on_pause(self, _):
         """ 暂停 """
+        if self.urgency:
+            return
         watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
 
     def on_complete(self, _):
         """ 完成接驳 """
+        if self.urgency:
+            return
         server.clear_batch()
         watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
 
     def on_stop(self, _):
         """ 关机 """
         watcher.publish(EVENT.SERIAL_CMD, "AA08shutdown")
+        exit(0)

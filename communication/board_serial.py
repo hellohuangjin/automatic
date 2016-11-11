@@ -60,9 +60,9 @@ class BoardTools(object):
 
         if cm_type == 'AB':
             if cmd == 'urgency':
-                watcher.publish(EVENT.EVT_URGENCY, None)
+                watcher.publish(EVENT.EVT_URGENCY, cmd)
             elif cmd == 'clear':
-                watcher.publish(EVENT.CLEAR, None)
+                watcher.publish(EVENT.CLEAR, cmd)
 
     def receive(self):
         """ 消息接收线程 """

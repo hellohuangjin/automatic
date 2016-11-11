@@ -139,8 +139,8 @@ class SelectDiolag(wx.Dialog):
         body = server.batch_pre_add()
         if body:
             dlg = wx.MessageDialog(self,
+                                   body['batch_date']+":"+u'第'+str(body['next_seq_no'])+u'批',
                                    u"确认创建",
-                                   body['batch_date']+":"+str(body['next_seq_no']),
                                    style=wx.YES_NO | wx.ICON_QUESTION)
             if dlg.ShowModal() == wx.ID_YES:
                 body = server.batch_add(body['batch_date'], body['next_seq_no'])
