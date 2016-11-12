@@ -109,7 +109,7 @@ class ListPanel(wx.Panel):
     def new_data(self, msg):
         """ 添加新纪录 """
         self.index += 1
-        if len(self.data) > 15:
+        if len(self.data) > 18:
             self.data.pop()
         bar_code, phone = msg
         self.data.insert(0, (str(self.index), bar_code, phone))
@@ -202,7 +202,7 @@ class InfoPanel(wx.Panel):
 
         dlg = ImageExplore(self, u"快递面单")
         self.img = dlg
-        dlg.SetBitmap(wx.BitmapFromImage(self.img))
+        dlg.SetBitmap(wx.NullBitmap)
         dlg.SetPosition((478, 150))
         dlg.ShowModal()
         self.img = self.express_img
@@ -278,8 +278,10 @@ class CtrlPanel(wx.Panel):
             select.ShowModal()
             all_key_in = "batch_id" in server.selected and "express_id" in server.selected
             if all_key_in:
+                watcher.info[0], watcher.info[1] = select.get_select_info()
                 watcher.publish(EVENT.SERIAL_CMD, "AA05start")
                 watcher.publish(EVENT.EVT_START, "start")
+                watcher.publish(EVENT.EVT_UPDATE, None)
             else:
                 server.clear_batch()
             select.Destroy()

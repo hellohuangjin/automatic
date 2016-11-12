@@ -85,6 +85,8 @@ class _Watcher(Thread):
             else:
                 self.info[5] += 1
             self.table_update(self.info)
+        elif event_type == EVENT.EVT_UPDATE:
+            self.table_update(self.info)
 
 
     def _logger(self, log_type, msg):

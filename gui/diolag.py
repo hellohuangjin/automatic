@@ -96,7 +96,8 @@ class SelectDiolag(wx.Dialog):
         self.company = wx.ComboBox(panel, choices=express_name, style=wx.CB_DROPDOWN)
         self.company.SetFont(font)
         batch_label = Text(panel, text=u"请选择批次", size=(150, 40), style=wx.TE_LEFT, font=15)
-        self.batch = wx.ComboBox(panel, choices=[], style=wx.CB_DROPDOWN)
+        self.batch_list = []
+        self.batch = wx.ComboBox(panel, choices=self.batch_list, style=wx.CB_DROPDOWN)
         self.batch.SetFont(font)
 
         self.company.Bind(wx.EVT_COMBOBOX, self.get_batch_list)
@@ -120,43 +121,53 @@ class SelectDiolag(wx.Dialog):
 
         sizer.Add(bottom, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 50)
 
-        self.batch_id = -1
-        self.express_id = -1
+        self.batch_index = -1
+        self.express_index = -1
 
         panel.SetSizer(sizer)
 
     def start_accept(self, _):
-        if self.express_id != -1 and self.batch_id != -1:
-            server.selected['express_id'] = self.express_id
-            server.selected['batch_id'] = self.batch_id
+        if self.express_index != -1 and self.batch_index != -1:
+            server.selected['express_id'] = self.express_list[self.express_index]['id']
+            server.selected['batch_id'] = self.batch_list[self.batch_index]['id']
             self.Close()
 
     def get_batch_list(self, _):
         index = self.company.GetSelection()
-        self.express_id = self.express_list[index]['id']
+        self.express_index = index
+        express_id = self.express_list[index]['id']
         if index != -1:
-            self.batch_list = server.get_batch_list(self.express_id)
+            self.batch_list = server.get_batch_list(express_id)
+            self.batch.Clear()
             for batch in self.batch_list:
                 self.batch.Append(batch['batch_date']+str(batch['seq_no']))
 
     def select_batch(self, _):
         index = self.batch.GetSelection()
-        batch_id = self.batch_list[index-1]['id']
-        self.batch_id = batch_id
+        self.batch_index = index
 
     def add_batch(self, _):
-        body = server.batch_pre_add()
+        if self.express_index == -1:
+            return
+        express_id = self.express_list[self.express_index]['id']
+        body = server.batch_pre_add(express_id)
         if body:
             dlg = wx.MessageDialog(self,
                                    body['batch_date']+":"+u'第'+str(body['next_seq_no'])+u'批',
                                    u"确认创建",
                                    style=wx.YES_NO | wx.ICON_QUESTION)
             if dlg.ShowModal() == wx.ID_YES:
-                body = server.batch_add(body['batch_date'], body['next_seq_no'])
-                batch = body[0]
-                server.selected['batch_id'] = batch['id']
-                self.batch.Append(batch['batch_date'] + str(batch['seq_no']))
+                body = server.batch_add(body['batch_date'], body['next_seq_no'], express_id)
+                if body:
+                    self.get_batch_list(None)
 
+    def get_select_info(self):
+        """返回选择信息"""
+        express_name = self.express_list[self.express_index]['name']
+        batch_info = self.batch_list[self.batch_index]
+        batch_name = batch_info['batch_date']+":"+u"第"+str(batch_info['seq_no'])+u'批'
+        print express_name, batch_name
+        return express_name, batch_name
 
 class ImageExplore(wx.Dialog):
     """

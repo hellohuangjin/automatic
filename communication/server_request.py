@@ -71,28 +71,25 @@ class Server(object):
         body = self.execute_request(url, self.gen_signer(params))
         return body
 
-    def batch_pre_add(self):
+    def batch_pre_add(self, express_id):
         url = self.base_url+self.url['pre_add']
-        if 'express_id' in self.selected:
-            params = {'ts': int(time.time()*1000),
-                      'sn': "scanner",
-                      'express_id': self.selected['express_id'],
-                      'logis_id': self.logis['id'],
-                      'uid': self.uid,
-                      'sid': self.sid}
+        params = {'ts': int(time.time()*1000),
+                  'sn': "scanner",
+                  'express_id':express_id,
+                  'logis_id': self.logis['id'],
+                  'uid': self.uid,
+                  'sid': self.sid}
 
-            body = self.execute_request(url, self.gen_signer(params))
-        else:
-            body = None
+        body = self.execute_request(url, self.gen_signer(params))
         return body
 
-    def batch_add(self, batch_date, seq_no):
+    def batch_add(self, batch_date, seq_no, express_id):
         url = self.base_url+self.url['add']
         params = {'ts': int(time.time()*1000),
                   'sn': "scanner",
                   'batch_date': batch_date,
                   'seq_no': seq_no,
-                  'express_id': self.selected['express_id'],
+                  'express_id': express_id,
                   'logis_id': self.logis['id'],
                   'uid': self.uid,
                   'sid': self.sid}
