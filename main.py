@@ -4,7 +4,7 @@
 import os
 from multiprocessing import Process, Queue
 
-from processor import Processor
+# from processor import Processor
 
 from context import watcher, PRJ_PATH
 
@@ -31,13 +31,14 @@ class Recognize(Process):
 
     def run(self):
         """执行函数"""
-        lang = os.path.join(PRJ_PATH, "source/")
-        reg_process = Processor(lang)
+        # lang = os.path.join(PRJ_PATH, "source/")
+        # reg_process = Processor(lang)
         while True:
             rect, name = self.queue.get()
-            path = "c:/img/"+name+".bmp"
-            width, height, _, _ = rect.split(',')
-            phone = reg_process.extract_phone(path, int(width), int(height))
+            # path = "c:/img/"+name+".bmp"
+            # width, height, _, _ = rect.split(',')
+            # phone = reg_process.extract_phone(path, int(width), int(height))
+            phone = "1231232412"
             self.notice.put(("NOTICE", EVENT.REG_PHONE, (name.split(",")[0], phone)))
 
 
@@ -47,19 +48,17 @@ def main():
     app = Window()
     queue = Queue()
 
-    watcher.daemon = True
     watcher.start()
 
-    for _ in range(2):
+    for _ in range(4):
         reg = Recognize(queue, watcher.original_cmd())
-        reg.daemon = True
         reg.start()
 
     camera = CameraTools(queue, 8500)
     camera.start_monitor()
 
-    board = BoardTools()
-    board.start_monitor()
+    # board = BoardTools()
+    # board.start_monitor()
 
     app.show()
 

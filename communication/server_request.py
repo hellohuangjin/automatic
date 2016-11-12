@@ -61,7 +61,6 @@ class Server(object):
         return express_list
 
     def get_batch_list(self, express_id):
-        self.selected["express_id"] = express_id
         url = self.base_url+self.url['batch']
         params = {'ts': int(time.time()*1000),
                   'sn': "scanner",

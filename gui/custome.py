@@ -118,3 +118,8 @@ class ListTable(NoTitleGrid):
         self.SetCellValue(row, 0, _id)
         self.SetCellValue(row, 1, bar)
         self.SetCellValue(row, 2, phone)
+
+    def clear(self):
+        self.ClearGrid()
+        self.set_label(["id", u"运单号", u"手机号"])
+

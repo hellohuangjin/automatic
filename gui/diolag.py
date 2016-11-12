@@ -120,25 +120,29 @@ class SelectDiolag(wx.Dialog):
 
         sizer.Add(bottom, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 50)
 
+        self.batch_id = -1
+        self.express_id = -1
+
         panel.SetSizer(sizer)
 
     def start_accept(self, _):
-        company = self.company.GetSelection()
-        batch = self.batch.GetSelection()
-        if company != -1 and batch != -1:
+        if self.express_id != -1 and self.batch_id != -1:
+            server.selected['express_id'] = self.express_id
+            server.selected['batch_id'] = self.batch_id
             self.Close()
 
     def get_batch_list(self, _):
         index = self.company.GetSelection()
+        self.express_id = self.express_list[index]['id']
         if index != -1:
-            self.batch_list = server.get_batch_list(self.express_list[index]['id'])
+            self.batch_list = server.get_batch_list(self.express_id)
             for batch in self.batch_list:
                 self.batch.Append(batch['batch_date']+str(batch['seq_no']))
 
     def select_batch(self, _):
         index = self.batch.GetSelection()
         batch_id = self.batch_list[index-1]['id']
-        server.selected['batch_id'] = batch_id
+        self.batch_id = batch_id
 
     def add_batch(self, _):
         body = server.batch_pre_add()

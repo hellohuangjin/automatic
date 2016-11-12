@@ -72,6 +72,8 @@ class MainFrame(wx.Frame):
         self.ctrl_panel = CtrlPanel(self)
         self.list_panel = ListPanel(self)
 
+        self.SetBackgroundColour((207, 207, 207))
+
         left = wx.BoxSizer(wx.VERTICAL)
 
         left.Add(self.status_panel, 0, wx.EXPAND)
@@ -95,12 +97,14 @@ class ListPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, size=(476, 600))
+        self.SetBackgroundColour((207, 207, 207))
         self.table = ListTable(self)
         self.table.SetSize((476, 600))
         self.table.set_label(["id", u"运单号", u"手机号"])
         self.index = 0
         self.data = list()
         watcher.attach(EVENT.REG_PHONE, self.new_data)
+        watcher.attach(EVENT.EVT_COMPLETE, self.clear)
 
     def new_data(self, msg):
         """ 添加新纪录 """
@@ -111,17 +115,25 @@ class ListPanel(wx.Panel):
         self.data.insert(0, (str(self.index), bar_code, phone))
         self.table.set_data(self.data)
 
+    def clear(self, _):
+        self.data = list()
+        self.index = 0
+        self.table.clear()
+
 
 class StatusPanel(wx.Panel):
     """状态展示panel """
 
     def __init__(self, parent):
         super(StatusPanel, self).__init__(parent)
-        img_url = os.path.join(PRJ_PATH, "source/img/ready.png")
-        image = wx.Image(img_url, wx.BITMAP_TYPE_PNG).Scale(800, 350)
+        img_url = os.path.join(PRJ_PATH, "source/img/ready.jpg")
+        image = wx.Image(img_url, wx.BITMAP_TYPE_JPEG).Scale(800, 350)
         self.static_img = wx.StaticBitmap(
             self, wx.ID_ANY, image.ConvertToBitmap(), size=(800, 350))
+        watcher.attach(EVENT.EVT_START, self.change_status)
         watcher.attach(EVENT.EVT_PAUSE, self.change_status)
+        watcher.attach(EVENT.EVT_URGENCY, self.change_status)
+        watcher.attach(EVENT.EVT_COMPLETE, self.change_status)
         self.ClearBackground()
 
     def change_status(self, msg):
@@ -132,13 +144,15 @@ class StatusPanel(wx.Panel):
         """
         img_url = None
         if msg == "pause":
-            img_url = os.path.join(PRJ_PATH, 'source/img/pause.png')
+            img_url = os.path.join(PRJ_PATH, 'source/img/pause.jpg')
         elif msg == "urgency":
-            img_url = os.path.join(PRJ_PATH, 'source/img/uergency.png')
+            img_url = os.path.join(PRJ_PATH, 'source/img/uergency.jpg')
         elif msg == "complete":
-            img_url = os.path.join(PRJ_PATH, 'source/img/ready.png')
+            img_url = os.path.join(PRJ_PATH, 'source/img/ready.jpg')
+        elif msg == 'start':
+            img_url = os.path.join(PRJ_PATH, 'source/img/start.jpg')
 
-        image = wx.Image(img_url, wx.BITMAP_TYPE_PNG).Scale(800, 350)
+        image = wx.Image(img_url, wx.BITMAP_TYPE_JPEG).Scale(800, 350)
         self.static_img.SetBitmap(image.ConvertToBitmap())
 
 
@@ -148,7 +162,7 @@ class InfoPanel(wx.Panel):
     def __init__(self, parent):
         super(InfoPanel, self).__init__(parent)
         self.img = None
-
+        self.SetBackgroundColour((207, 207, 207))
         self.express_img = wx.BitmapButton(
             self, wx.ID_ANY, wx.NullBitmap, size=(300, 246))
         self.img = self.express_img
@@ -156,7 +170,7 @@ class InfoPanel(wx.Panel):
         labels = [u"快递公司", u"接驳批次", u"快件总数", u"接驳数", u"手机号识别数", u"异常件数"]
 
         self.table = LabelTable(self)
-        self.table.SetSize((550, 246))
+        self.table.SetSize((450, 246))
         self.table.set_label(labels)
         watcher.table_update = self.table.set_data
 
@@ -200,7 +214,7 @@ class CtrlPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-
+        self.SetBackgroundColour((207, 207, 207))
         self.urgency = False
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.start = Button(self, text=u"开始接驳", size=(120, 52), colour='green')
@@ -265,23 +279,27 @@ class CtrlPanel(wx.Panel):
             all_key_in = "batch_id" in server.selected and "express_id" in server.selected
             if all_key_in:
                 watcher.publish(EVENT.SERIAL_CMD, "AA05start")
+                watcher.publish(EVENT.EVT_START, "start")
             else:
                 server.clear_batch()
             select.Destroy()
         else:
             watcher.publish(EVENT.SERIAL_CMD, "AA05start")
+            watcher.publish(EVENT.EVT_START, "start")
 
     def on_pause(self, _):
         """ 暂停 """
         if self.urgency:
             return
         watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
+        watcher.publish(EVENT.EVT_PAUSE, 'pause')
 
     def on_complete(self, _):
         """ 完成接驳 """
         if self.urgency:
             return
         server.clear_batch()
+        watcher.publish(EVENT.EVT_COMPLETE, 'complete')
         watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
 
     def on_stop(self, _):

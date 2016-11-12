@@ -108,8 +108,7 @@ class _Watcher(Thread):
             if target == 'NOTICE':
                 self._notice(type, msg)
             elif target == 'LOG':
-                # self._logger(type, msg)
-                pass
+                self._logger(type, msg)
 
 # 项目跟目录
 PRJ_PATH = os.path.dirname(os.path.abspath(__file__))
