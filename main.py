@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 """ 主线程， UI """
 import os
+import time
 from multiprocessing import Process, Queue
 
-# from processor import Processor
+from processor import Processor
 
 from context import watcher, PRJ_PATH
 
@@ -31,14 +32,15 @@ class Recognize(Process):
 
     def run(self):
         """执行函数"""
-        # lang = os.path.join(PRJ_PATH, "source/")
-        # reg_process = Processor(lang)
+        lang = os.path.join(PRJ_PATH, "source/")
+        reg_process = Processor(lang)
         while True:
             rect, name = self.queue.get()
-            # path = "c:/img/"+name+".bmp"
-            # width, height, _, _ = rect.split(',')
-            # phone = reg_process.extract_phone(path, int(width), int(height))
-            phone = "1231232412"
+            start_time = time.time()
+            path = "c:/img/"+name+".bmp"
+            width, height, _, _ = rect.split(',')
+            phone = reg_process.extract_phone(path, int(width), int(height))
+            print "phone: {0}; time: {1}".format(phone, time.time()-start_time)
             self.notice.put(("NOTICE", EVENT.REG_PHONE, (name.split(",")[0], phone)))
 
 
@@ -57,8 +59,8 @@ def main():
     camera = CameraTools(queue, 8500)
     camera.start_monitor()
 
-    # board = BoardTools()
-    # board.start_monitor()
+    board = BoardTools()
+    board.start_monitor()
 
     app.show()
 

@@ -82,7 +82,7 @@ class LabelTable(NoTitleGrid):
 class ListTable(NoTitleGrid):
     """ 列表 """
     def __init__(self, parent):
-        super(ListTable, self).__init__(parent, 20, 3)
+        super(ListTable, self).__init__(parent, 14, 3)
         self.SetColSize(0, 50)
         self.SetColSize(1, 250)
         self.SetColSize(2, 176)

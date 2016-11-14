@@ -99,7 +99,7 @@ class ListPanel(wx.Panel):
         wx.Panel.__init__(self, parent, size=(476, 600))
         self.SetBackgroundColour((207, 207, 207))
         self.table = ListTable(self)
-        self.table.SetSize((476, 600))
+        self.table.SetSize((476, 700))
         self.table.set_label(["id", u"运单号", u"手机号"])
         self.index = 0
         self.data = list()
@@ -109,7 +109,7 @@ class ListPanel(wx.Panel):
     def new_data(self, msg):
         """ 添加新纪录 """
         self.index += 1
-        if len(self.data) > 18:
+        if len(self.data) > 12:
             self.data.pop()
         bar_code, phone = msg
         self.data.insert(0, (str(self.index), bar_code, phone))
