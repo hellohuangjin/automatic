@@ -68,7 +68,6 @@ class CameraTools(object):
         """ 消息接收线程 """
         while True:
             cmd = self.server.recv(64)
-            print "cmd"
             if cmd == '':
                 self._reconnect()
             else:

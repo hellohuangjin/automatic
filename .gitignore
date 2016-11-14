@@ -2,3 +2,5 @@
 .idea
 **/log/*
 tcp_server.py
+.DS_Stroe
+

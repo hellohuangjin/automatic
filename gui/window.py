@@ -214,26 +214,27 @@ class CtrlPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+        self.key = [0, 0, 0, 1, 0]
         self.SetBackgroundColour((207, 207, 207))
         self.urgency = False
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.start = Button(self, text=u"开始接驳", size=(120, 52), colour='green')
-        self.pause = Button(self, u"暂停接驳", (120, 52), 'yellow')
-        self.complete = Button(self, u"完成接驳", (120, 52), 'green')
-        self.stop = Button(self, u"关机", (120, 52), 'red')
-        self.login = Button(self, u"登录", (120, 52), 'white')
+        start = Button(self, text=u"开始接驳", size=(120, 52), colour='green')
+        pause = Button(self, u"暂停接驳", (120, 52), 'yellow')
+        complete = Button(self, u"完成接驳", (120, 52), 'green')
+        shoutdown = Button(self, u"关机", (120, 52), 'red')
+        self.login_btn = Button(self, u"登录", (120, 52), 'white')
 
-        sizer.Add(self.start, 0, wx.EXPAND)
-        sizer.Add(self.pause, 0, wx.EXPAND | wx.LEFT, 50)
-        sizer.Add(self.complete, 0, wx.EXPAND | wx.LEFT, 50)
-        sizer.Add(self.stop, 0, wx.EXPAND | wx.LEFT, 50)
-        sizer.Add(self.login, 0, wx.EXPAND | wx.LEFT, 50)
+        sizer.Add(start, 0, wx.EXPAND)
+        sizer.Add(pause, 0, wx.EXPAND | wx.LEFT, 50)
+        sizer.Add(complete, 0, wx.EXPAND | wx.LEFT, 50)
+        sizer.Add(shoutdown, 0, wx.EXPAND | wx.LEFT, 50)
+        sizer.Add(self.login_btn, 0, wx.EXPAND | wx.LEFT, 50)
 
-        self.Bind(wx.EVT_BUTTON, self.on_start, self.start)
-        self.Bind(wx.EVT_BUTTON, self.on_pause, self.pause)
-        self.Bind(wx.EVT_BUTTON, self.on_complete, self.complete)
-        self.Bind(wx.EVT_BUTTON, self.on_stop, self.stop)
-        self.Bind(wx.EVT_BUTTON, self.on_login, self.login)
+        self.Bind(wx.EVT_BUTTON, self.start, start)
+        self.Bind(wx.EVT_BUTTON, self.pause, pause)
+        self.Bind(wx.EVT_BUTTON, self.complete, complete)
+        self.Bind(wx.EVT_BUTTON, self.shoutdown, shoutdown)
+        self.Bind(wx.EVT_BUTTON, self.login, self.login_btn)
 
         watcher.attach(EVENT.EVT_URGENCY, self.urgency_event)
         watcher.attach(EVENT.CLEAR, self.urgency_event)
@@ -241,12 +242,13 @@ class CtrlPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def urgency_event(self, msg):
+        """ 紧急情况，禁止所有按钮 """
         if msg == 'urgency':
             self.urgency = True
         elif msg == 'clear':
             self.urgency = False
 
-    def on_login(self, _):
+    def login(self, _):
         """
         登录菜单
         """
@@ -257,13 +259,13 @@ class CtrlPanel(wx.Panel):
             login.SetPosition((550, 250))
             login.ShowModal()
             if server.uid:
-                self.login.SetLabel(u"注销")
+                self.login_btn.SetLabel(u"注销")
             login.Destroy()
         else:
             server.logout()
-            self.login.SetLabel(u"登录")
+            self.login_btn.SetLabel(u"登录")
 
-    def on_start(self, _):
+    def start(self, _):
         """
         设备启动菜单时间处理器
         点击启动菜单时调用该函数
@@ -289,14 +291,14 @@ class CtrlPanel(wx.Panel):
             watcher.publish(EVENT.SERIAL_CMD, "AA05start")
             watcher.publish(EVENT.EVT_START, "start")
 
-    def on_pause(self, _):
+    def pause(self, _):
         """ 暂停 """
         if self.urgency:
             return
         watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
         watcher.publish(EVENT.EVT_PAUSE, 'pause')
 
-    def on_complete(self, _):
+    def complete(self, _):
         """ 完成接驳 """
         if self.urgency:
             return
@@ -311,7 +313,7 @@ class CtrlPanel(wx.Panel):
         watcher.info[5] = 0;
         watcher.publish(EVENT.EVT_UPDATE, None)
 
-    def on_stop(self, _):
+    def shoutdown(self, _):
         """ 关机 """
         watcher.publish(EVENT.SERIAL_CMD, "AA08shutdown")
         exit(0)
