@@ -180,7 +180,7 @@ class InfoPanel(wx.Panel):
         sizer.Add(self.table, wx.ID_ANY, wx.EXPAND)
         sizer.Add(self.express_img, wx.ID_ANY, wx.EXPAND | wx.LEFT, 50)
 
-        # watcher.attach(EVENT.EVT_CAMERA, self.change_img)
+        watcher.attach(EVENT.EVT_CAMERA, self.change_img)
 
         self.SetSizer(sizer)
 
@@ -303,6 +303,13 @@ class CtrlPanel(wx.Panel):
         server.clear_batch()
         watcher.publish(EVENT.EVT_COMPLETE, 'complete')
         watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
+        watcher.info[0] = u"尚未接驳"
+        watcher.info[1] = u"尚未接驳"
+        watcher.info[2] = 0;
+        watcher.info[3] = 0;
+        watcher.info[4] = 0;
+        watcher.info[5] = 0;
+        watcher.publish(EVENT.EVT_UPDATE, None)
 
     def on_stop(self, _):
         """ 关机 """
