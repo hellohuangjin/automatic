@@ -31,7 +31,6 @@ class Window(object):
 
     def show(self):
         """显示界面"""
-        self.frame.ShowFullScreen(True)
         self.app.MainLoop()
 
 
@@ -89,8 +88,7 @@ class MainFrame(wx.Frame):
         self.SetSizer(sizer)
         sizer.Fit(self)
 
-        self.Show(True)
-
+        self.ShowFullScreen(True)
 
 class ListPanel(wx.Panel):
     """ panel """
