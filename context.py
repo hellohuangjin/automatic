@@ -80,7 +80,8 @@ class _Watcher(Thread):
                 callback(msg)
 
         if event_type == EVENT.REG_PHONE:
-            if msg:
+            _, phone = msg
+            if phone:
                 self.info[4] += 1
             else:
                 self.info[5] += 1

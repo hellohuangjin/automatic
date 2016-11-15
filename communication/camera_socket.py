@@ -63,6 +63,7 @@ class CameraTools(object):
                 watcher.publish(EVENT.EVT_CAMERA, name)
                 watcher.info[3] += 1
             watcher.info[2] += 1
+            watcher.publish(EVENT.EVT_UPDATE, None)
 
     def receive(self):
         """ 消息接收线程 """
