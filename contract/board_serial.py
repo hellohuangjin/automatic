@@ -5,15 +5,13 @@
 import threading
 import serial
 
-from context import watcher
-
 from common.defines import EVENT, InerException
 
 
 class BoardTools(object):
     """ 通过串口发送接收命令 """
 
-    def __init__(self):
+    def __init__(self, watcher):
         """
         初始化函数
         :param port:端口
@@ -24,7 +22,8 @@ class BoardTools(object):
         self.baudrate = 115200
         self.serial = None
         self.task = None
-        watcher.attach(EVENT.SERIAL_CMD, self._send_command)
+        self.watcher = watcher
+        self.watcher.attach_listener(EVENT.EVT_CMD, self._send_command)
 
     def start_monitor(self):
         """
@@ -47,8 +46,7 @@ class BoardTools(object):
         except serial.SerialException:
             self._connect()
 
-    @staticmethod
-    def decode_cmd(content):
+    def decode_cmd(self, content):
         """
         解析命令
         :param content:命令内容
@@ -60,9 +58,9 @@ class BoardTools(object):
 
         if cm_type == 'AB':
             if cmd == 'urgency':
-                watcher.publish(EVENT.EVT_URGENCY, cmd)
+                self.watcher.publish(EVENT.EVT_URGENCY, cmd)
             elif cmd == 'clear':
-                watcher.publish(EVENT.CLEAR, cmd)
+                self.watcher.publish(EVENT.CLEAR, cmd)
 
     def receive(self):
         """ 消息接收线程 """
@@ -82,6 +80,5 @@ class BoardTools(object):
         try:
             self.serial = serial.Serial(self.port, self.baudrate)
         except serial.SerialException:
-            watcher.log_error("serial connect error")
-            watcher.publish(EVENT.PROGRAM_ERROR, "serial connect error")
+            self.watcher.publish(EVENT.PROGRAM_ERROR, "serial connect error")
             raise InerException("serial content error", __file__)

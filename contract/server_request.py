@@ -9,8 +9,10 @@ import hashlib
 import requests
 
 from common.defines import InerException
+from common.utils import singleton
 
 
+@singleton
 class Server(object):
     """服务器通信工具类"""
 
@@ -130,9 +132,6 @@ class Server(object):
         try:
             rsp = requests.post(url, data=params)
         except requests.RequestException as e:
-            # 使用全局数据，避免循环导入
-            from context import watcher
-            watcher.log_error(str(e))
             raise InerException("http request error", __file__)
         else:
             content = json.loads(rsp.content)

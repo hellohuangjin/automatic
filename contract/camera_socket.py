@@ -6,23 +6,20 @@ python socket 通信模块
 import socket
 import threading
 
-
 from common.defines import EVENT, InerException
-
-from context import watcher
 
 
 class CameraTools(object):
     """ 视觉系统通信工具类 """
 
-    def __init__(self, queue, port):
+    def __init__(self, watcher):
         """
         初始化
         :param port:端口
         :return None
         """
-        self.queue = queue
-        self.port = port
+        self.watcher = watcher
+        self.port = 8500
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.task = None
 
@@ -31,7 +28,6 @@ class CameraTools(object):
         if not self.task:
             self._connect()
             self.task = threading.Thread(target=self.receive)
-            self.task.setDaemon(True)
             self.task.start()
 
     def send_command(self, command):
@@ -52,6 +48,7 @@ class CameraTools(object):
         命令解析
         :cmd:命令内容
         """
+        print cmd
         if cmd == 'Ready':
             pass
         else:
@@ -59,11 +56,8 @@ class CameraTools(object):
             if check == '0':
                 pass
             else:
-                self.queue.put((pos, name))
-                watcher.publish(EVENT.EVT_CAMERA, name)
-                watcher.info[3] += 1
-            watcher.info[2] += 1
-            watcher.publish(EVENT.EVT_UPDATE, None)
+                self.watcher.publish(EVENT.EVT_GETBAR, (pos, name))
+            self.watcher.publish(EVENT.EVT_INFO, None)
 
     def receive(self):
         """ 消息接收线程 """
@@ -84,6 +78,5 @@ class CameraTools(object):
         try:
             self.server.connect(("localhost", self.port))
         except socket.error:
-            watcher.log_error("socket connetc errot")
-            watcher.publish(EVENT.PROGRAM_ERROR, "socket connect error")
+            self.watcher.publish(EVENT.ERROR_PROGRAM, "socket connect error")
             raise InerException("socket connect error", __file__)

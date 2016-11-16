@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import wx
-from context import server
-from gui.custome import Text, Button
+from view.custome import Text, Button
+
+from contract.server_request import Server
 
 
 class LoginDiolag(wx.Dialog):
@@ -50,6 +51,7 @@ class LoginDiolag(wx.Dialog):
         self.password.Clear()
 
     def login(self, _):
+        server = Server()
         name = self.name.GetValue()
         password = self.password.GetValue()
         if name != "" and password != "":
@@ -128,6 +130,7 @@ class SelectDiolag(wx.Dialog):
 
     def start_accept(self, _):
         if self.express_index != -1 and self.batch_index != -1:
+            server = Server()
             server.selected['express_id'] = self.express_list[self.express_index]['id']
             server.selected['batch_id'] = self.batch_list[self.batch_index]['id']
             self.Close()
@@ -137,6 +140,7 @@ class SelectDiolag(wx.Dialog):
         self.express_index = index
         express_id = self.express_list[index]['id']
         if index != -1:
+            server = Server()
             self.batch_list = server.get_batch_list(express_id)
             self.batch.Clear()
             for batch in self.batch_list:
@@ -149,6 +153,7 @@ class SelectDiolag(wx.Dialog):
     def add_batch(self, _):
         if self.express_index == -1:
             return
+        server = Server()
         express_id = self.express_list[self.express_index]['id']
         body = server.batch_pre_add(express_id)
         if body:
@@ -168,6 +173,7 @@ class SelectDiolag(wx.Dialog):
         batch_name = batch_info['batch_date']+":"+u"第"+str(batch_info['seq_no'])+u'批'
         print express_name, batch_name
         return express_name, batch_name
+
 
 class ImageExplore(wx.Dialog):
     """

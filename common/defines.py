@@ -3,7 +3,13 @@
 
 """ 基本类型定义模块 """
 
-from enum import Enum
+
+class Enum(set):
+    """自定义枚举常量"""
+    def __getattr__(self, name):
+        if name in self:
+            return name
+        raise AttributeError
 
 
 class InerException(Exception):
@@ -18,33 +24,18 @@ class InerException(Exception):
         return "{file}: {msg}".format(file=self.file, msg=self.msg)
 
 
-class TYPE(Enum):
-    """ 命令类型 """
-    net = 1  # 网络命令
-    serial = 2  # 串口命令
+EVENT = Enum(['ERROR_HARDWARE',
+              'ERROR_PROGRAM',
+              'EVT_READY',
+              'EVT_URGENCY',
+              'EVT_GETPHONE',
+              'EVT_GETBAR',
+              'EVT_START',
+              'EVT_PAUSE',
+              'EVT_COMPLETE',
+              'EVT_SHUTDOWN',
+              'EVT_CMD',
+              'EVT_CLEAR',
+              'EVT_INFO'])
 
-
-class EVENT(Enum):
-    """事件类型"""
-    CHECK = 0
-    CHECK_ERROR = 1
-    PROGRAM_ERROR = 3
-    INIT_COMPLETE = 4
-    EVT_URGENCY = 5
-    REG_PHONE = 6
-    EVT_PAUSE = 7
-    EVT_STOP = 8
-    EVT_COMPLETE = 9
-    EVT_START = 10
-    EVT_CAMERA = 11
-    SERIAL_CMD = 12
-    EVT_UPDATE = 13
-    CLEAR = 14
-
-
-
-class LOGLEVER(Enum):
-    """ 日志级别 """
-    INFO = 0
-    WARNING = 1
-    ERROR = 2
+LOGLEVER = Enum(['INFO', 'ERROR', 'WARNING'])

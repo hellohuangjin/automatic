@@ -7,6 +7,17 @@ import sqlite3
 from defines import LOGLEVER
 
 
+def singleton(cls, *args, **kwargs):
+    """单例装饰器"""
+    instance = dict()
+
+    def _singleton():
+        if cls not in instance:
+            instance[cls] = cls(*args, **kwargs)
+        return instance[cls]
+    return _singleton
+
+
 class Logger(object):
     """自定义日志打印"""
 

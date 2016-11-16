@@ -9,67 +9,34 @@ import wx.grid
 
 from common.defines import EVENT
 
-from context import PRJ_PATH, server, watcher
-from gui.custome import LabelTable, ListTable, Button
-from gui.diolag import SelectDiolag, ImageExplore, LoginDiolag
+from contract.server_request import Server
 
+from manager import PRJ_PATH
+from view.custome import LabelTable, ListTable, Button
+from view.diolag import SelectDiolag, ImageExplore, LoginDiolag
 
-class Window(object):
-    """GUI"""
-
-    def __init__(self):
-
-        self.app = wx.App()
-        self.frame = MainFrame(None)
-        watcher.attach(EVENT.PROGRAM_ERROR, self.program_error)
-
-    def program_error(self, msg):
-        """程序启动错误监听"""
-        self.frame.Close()
-        error = ErrorFrame(parent=None, msg=msg)
-        error.show()
-
-    def show(self):
-        """显示界面"""
-        self.app.MainLoop()
-
-
-class ErrorFrame(object):
-    """错误信息界面"""
-
-    def __init__(self, parent, msg=None):
-        self.dlg = wx.MessageDialog(parent, msg, u"程序错误", wx.OK | wx.ICON_ERROR)
-
-    def show(self):
-        self.dlg.ShowModal()
-        exit(0)
 
 class MainFrame(wx.Frame):
     """ 主界面 """
 
-    def __init__(self, parent):
+    def __init__(self, watcher):
         """
         如果父元素为None(默认为None, 必须传入),则该frame作为顶级元素，
         title为窗口标题，可以不设置。
-        :param parent:父元素
-        :param title:窗口标题
+        :param watcher:异步事件监听
         :return None
         """
 
         style = wx.DEFAULT_FRAME_STYLE ^ (wx.RESIZE_BORDER | wx.MINIMIZE_BOX |
                                           wx.MAXIMIZE_BOX)
-        wx.Frame.__init__(
-            self,
-            parent,
-            id=wx.ID_ANY,
-            title=u"自动分拣",
-            size=(1366, 768),
-            style=style)
+        wx.Frame.__init__(self, None, id=wx.ID_ANY, style=style)
 
         self.status_panel = StatusPanel(self)
         self.info_panel = InfoPanel(self)
         self.ctrl_panel = CtrlPanel(self)
         self.list_panel = ListPanel(self)
+
+        self.ctrl_panel.watcher = watcher
 
         self.SetBackgroundColour((207, 207, 207))
 
@@ -80,15 +47,37 @@ class MainFrame(wx.Frame):
         left.Add(self.ctrl_panel, 0, wx.EXPAND | wx.TOP, 30)
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(left, wx.ID_ANY, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM,
-                  30)
-        sizer.Add(self.list_panel, wx.ID_ANY, wx.EXPAND | wx.RIGHT | wx.TOP |
-                  wx.LEFT, 30)
+        sizer.Add(left, wx.ID_ANY, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM, 30)
+        sizer.Add(self.list_panel, wx.ID_ANY, wx.EXPAND | wx.RIGHT | wx.TOP | wx.LEFT, 30)
 
         self.SetSizer(sizer)
-        sizer.Fit(self)
+
+        self._init_event(watcher)
+
+        self.Show(True)
 
         self.ShowFullScreen(True)
+
+    def _init_event(self, watcher):
+
+        # 列表view事件
+        watcher.attach_listener(EVENT.EVT_GETPHONE, self.list_panel.new_data)
+        watcher.attach_listener(EVENT.EVT_COMPLETE, self.list_panel.clear)
+
+        # 状态展示view事件
+        watcher.attach_listener(EVENT.EVT_START, self.status_panel.change_status)
+        watcher.attach_listener(EVENT.EVT_PAUSE, self.status_panel.change_status)
+        watcher.attach_listener(EVENT.EVT_URGENCY, self.status_panel.change_status)
+        watcher.attach_listener(EVENT.EVT_COMPLETE, self.status_panel.change_status)
+
+        # 信息展示view事件
+        # watcher.attach(EVENT.EVT_GETBAR, self.info_panel.change_img)
+        watcher.attach_listener(EVENT.EVT_INFO, self.info_panel.update_info)
+
+        # 控制view事件
+        watcher.attach_listener(EVENT.EVT_URGENCY, self.ctrl_panel.urgency_event)
+        watcher.attach_listener(EVENT.EVT_CLEAR, self.ctrl_panel.urgency_event)
+
 
 class ListPanel(wx.Panel):
     """ panel """
@@ -101,8 +90,6 @@ class ListPanel(wx.Panel):
         self.table.set_label(["id", u"运单号", u"手机号"])
         self.index = 0
         self.data = list()
-        watcher.attach(EVENT.REG_PHONE, self.new_data)
-        watcher.attach(EVENT.EVT_COMPLETE, self.clear)
 
     def new_data(self, msg):
         """ 添加新纪录 """
@@ -128,10 +115,7 @@ class StatusPanel(wx.Panel):
         image = wx.Image(img_url, wx.BITMAP_TYPE_JPEG).Scale(800, 350)
         self.static_img = wx.StaticBitmap(
             self, wx.ID_ANY, image.ConvertToBitmap(), size=(800, 350))
-        watcher.attach(EVENT.EVT_START, self.change_status)
-        watcher.attach(EVENT.EVT_PAUSE, self.change_status)
-        watcher.attach(EVENT.EVT_URGENCY, self.change_status)
-        watcher.attach(EVENT.EVT_COMPLETE, self.change_status)
+
         self.ClearBackground()
 
     def change_status(self, msg):
@@ -170,7 +154,6 @@ class InfoPanel(wx.Panel):
         self.table = LabelTable(self)
         self.table.SetSize((450, 246))
         self.table.set_label(labels)
-        watcher.table_update = self.table.set_data
 
         self.express_img.Bind(wx.EVT_BUTTON, self.img_explore)
 
@@ -178,9 +161,11 @@ class InfoPanel(wx.Panel):
         sizer.Add(self.table, wx.ID_ANY, wx.EXPAND)
         sizer.Add(self.express_img, wx.ID_ANY, wx.EXPAND | wx.LEFT, 50)
 
-        watcher.attach(EVENT.EVT_CAMERA, self.change_img)
-
         self.SetSizer(sizer)
+
+    def update_info(self):
+        """更新表"""
+        print "update"
 
     def change_img(self, name):
         """
@@ -214,7 +199,9 @@ class CtrlPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.key = [0, 0, 0, 1, 0]
         self.SetBackgroundColour((207, 207, 207))
+        self.watcher = None
         self.urgency = False
+        self.server = Server()
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         start = Button(self, text=u"开始接驳", size=(120, 52), colour='green')
         pause = Button(self, u"暂停接驳", (120, 52), 'yellow')
@@ -234,9 +221,6 @@ class CtrlPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.shoutdown, shoutdown)
         self.Bind(wx.EVT_BUTTON, self.login, self.login_btn)
 
-        watcher.attach(EVENT.EVT_URGENCY, self.urgency_event)
-        watcher.attach(EVENT.CLEAR, self.urgency_event)
-
         self.SetSizer(sizer)
 
     def urgency_event(self, msg):
@@ -252,15 +236,15 @@ class CtrlPanel(wx.Panel):
         """
         if self.urgency:
             return
-        if server.uid is None:
+        if self.server.uid is None:
             login = LoginDiolag(self)
             login.SetPosition((550, 250))
             login.ShowModal()
-            if server.uid:
+            if self.server.uid:
                 self.login_btn.SetLabel(u"注销")
             login.Destroy()
         else:
-            server.logout()
+            self.server.logout()
             self.login_btn.SetLabel(u"登录")
 
     def start(self, _):
@@ -270,48 +254,42 @@ class CtrlPanel(wx.Panel):
         """
         if self.urgency:
             return
-        all_key_in = "batch_id" in server.selected and "express_id" in server.selected
+        all_key_in = "batch_id" in self.server.selected and "express_id" in self.server.selected
         if not all_key_in:
-            express_list = server.get_express_list()
+            express_list = self.server.get_express_list()
             select = SelectDiolag(self, u"选择窗口", express_list)
             select.SetPosition((400, 200))
             select.ShowModal()
-            all_key_in = "batch_id" in server.selected and "express_id" in server.selected
+            all_key_in = "batch_id" in self.server.selected and "express_id" in self.server.selected
             if all_key_in:
-                watcher.info[0], watcher.info[1] = select.get_select_info()
-                watcher.publish(EVENT.SERIAL_CMD, "AA05start")
-                watcher.publish(EVENT.EVT_START, "start")
-                watcher.publish(EVENT.EVT_UPDATE, None)
+                # watcher.info[0], watcher.info[1] = select.get_select_info()
+                self.watcher.publish(EVENT.EVT_CMD, "AA05start")
+                self.watcher.publish(EVENT.EVT_START, "start")
+                self.watcher.publish(EVENT.EVT_UPDATE, None)
             else:
-                server.clear_batch()
+                self.server.clear_batch()
             select.Destroy()
         else:
-            watcher.publish(EVENT.SERIAL_CMD, "AA05start")
-            watcher.publish(EVENT.EVT_START, "start")
+            self.watcher.publish(EVENT.EVT_CMD, "AA05start")
+            self.watcher.publish(EVENT.EVT_START, "start")
 
     def pause(self, _):
         """ 暂停 """
         if self.urgency:
             return
-        watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
-        watcher.publish(EVENT.EVT_PAUSE, 'pause')
+        self.watcher.publish(EVENT.EVT_CMD, "AA04stop")
+        self.watcher.publish(EVENT.EVT_PAUSE, 'pause')
 
     def complete(self, _):
         """ 完成接驳 """
         if self.urgency:
             return
-        server.clear_batch()
-        watcher.publish(EVENT.EVT_COMPLETE, 'complete')
-        watcher.publish(EVENT.SERIAL_CMD, "AA04stop")
-        watcher.info[0] = u"尚未接驳"
-        watcher.info[1] = u"尚未接驳"
-        watcher.info[2] = 0;
-        watcher.info[3] = 0;
-        watcher.info[4] = 0;
-        watcher.info[5] = 0;
-        watcher.publish(EVENT.EVT_UPDATE, None)
+        self.server.clear_batch()
+        self.watcher.publish(EVENT.EVT_COMPLETE, 'complete')
+        self.watcher.publish(EVENT.EVT_CMD, "AA04stop")
+        self.watcher.publish(EVENT.EVT_UPDATE, None)
 
     def shoutdown(self, _):
         """ 关机 """
-        watcher.publish(EVENT.SERIAL_CMD, "AA08shutdown")
+        self.watcher.publish(EVENT.EVT_CMD, "AA08shutdown")
         exit(0)
