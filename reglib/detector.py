@@ -13,15 +13,13 @@ from manager import PRJ_PATH
 
 def reg_process(inqueue, outqueue):
     """识别进程"""
-    # lang = os.path.join(None, "source/")
-    # reg_process = Processor(lang)
+    lang = os.path.join(None, "source/")
+    reg_process = Processor(lang)
     while True:
-        print "run"
         rect, name = inqueue.get()
-        # path = "c:/img/"+name+".bmp"
-        # width, height, _, _ = rect.split(',')
-        # phone = reg_process.extract_phone(path, int(width), int(height))
-        phone = "12345678901"
+        path = "c:/img/"+name+".bmp"
+        width, height, _, _ = rect.split(',')
+        phone = reg_process.extract_phone(path, int(width), int(height))
         outqueue.put((name.split(",")[0], phone))
 
 
@@ -49,17 +47,9 @@ class Detector(object):
             self._thread.start()
 
     def deliver(self, msg):
-        print "deliver", msg
         self.inqueue.put(msg)
 
     def __run(self):
         while self._active:
             msg = self.outqueue.get()
-            print "receive", msg
-            # try:
-                # msg = self.outqueue.get(block=True, timeout=1)
-            # except Empty:
-                # pass
-            # else:
-                # print msg
-
+            self.watcher.publish(EVENT.EVT_GETPHONE, msg)

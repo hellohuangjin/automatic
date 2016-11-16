@@ -7,7 +7,7 @@ import os
 import wx
 import wx.grid
 
-from common.defines import EVENT
+from common.defines import EVENT, INFO
 
 from contract.server_request import Server
 
@@ -73,6 +73,7 @@ class MainFrame(wx.Frame):
         # 信息展示view事件
         # watcher.attach(EVENT.EVT_GETBAR, self.info_panel.change_img)
         watcher.attach_listener(EVENT.EVT_INFO, self.info_panel.update_info)
+        watcher.attach_listener(EVENT.EVT_COMPLETE, self.info_panel.clear_info)
 
         # 控制view事件
         watcher.attach_listener(EVENT.EVT_URGENCY, self.ctrl_panel.urgency_event)
@@ -148,6 +149,7 @@ class InfoPanel(wx.Panel):
         self.express_img = wx.BitmapButton(
             self, wx.ID_ANY, wx.NullBitmap, size=(300, 246))
         self.img = self.express_img
+        self.info = [0, 0, 0, 0]
 
         labels = [u"快递公司", u"接驳批次", u"快件总数", u"接驳数", u"手机号识别数", u"异常件数"]
 
@@ -163,9 +165,28 @@ class InfoPanel(wx.Panel):
 
         self.SetSizer(sizer)
 
-    def update_info(self):
+    def update_info(self, msg):
         """更新表"""
-        print "update"
+        type_ = msg[0]
+        if type_ == INFO.EXPRESS:
+            for row, value in enumerate(msg[1:]):
+                self.table.set_cell(row, value)
+        elif type_ == INFO.BAR:
+            self.info[0] += msg[1]
+            self.info[1] += msg[2]
+            self.table.set_cell(2, str(self.info[0]))
+            self.table.set_cell(3, str(self.info[1]))
+        elif type_ == INFO.PHONE:
+            self.info[2] += msg[1]
+            self.info[3] += msg[2]
+            self.table.set_cell(4, str(self.info[2]))
+            self.table.set_cell(5, str(self.info[3]))
+
+    def clear_info(self):
+        """清除信息表"""
+        info = [u'尚未接驳', u'尚未接驳', u'0', u'0', u'0', u'0']
+        self.table.set_data(info)
+        self.info = [0, 0, 0, 0]
 
     def change_img(self, name):
         """
@@ -262,10 +283,10 @@ class CtrlPanel(wx.Panel):
             select.ShowModal()
             all_key_in = "batch_id" in self.server.selected and "express_id" in self.server.selected
             if all_key_in:
-                # watcher.info[0], watcher.info[1] = select.get_select_info()
+                express, batch = select.get_select_info()
                 self.watcher.publish(EVENT.EVT_CMD, "AA05start")
                 self.watcher.publish(EVENT.EVT_START, "start")
-                self.watcher.publish(EVENT.EVT_UPDATE, None)
+                self.watcher.publish(EVENT.EVT_INFO, (INFO.EXPRESS, express, batch))
             else:
                 self.server.clear_batch()
             select.Destroy()
@@ -287,7 +308,7 @@ class CtrlPanel(wx.Panel):
         self.server.clear_batch()
         self.watcher.publish(EVENT.EVT_COMPLETE, 'complete')
         self.watcher.publish(EVENT.EVT_CMD, "AA04stop")
-        self.watcher.publish(EVENT.EVT_UPDATE, None)
+        self.watcher.publish(EVENT.EVT_INFO, None)
 
     def shoutdown(self, _):
         """ 关机 """

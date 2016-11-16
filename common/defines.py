@@ -38,4 +38,6 @@ EVENT = Enum(['ERROR_HARDWARE',
               'EVT_CLEAR',
               'EVT_INFO'])
 
+INFO = Enum(['EXPRESS', "BAR", "PHONE"])
+
 LOGLEVER = Enum(['INFO', 'ERROR', 'WARNING'])

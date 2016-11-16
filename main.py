@@ -5,7 +5,6 @@
 import wx
 from manager import EventManager
 
-# from common.defines import EVENT
 from contract.camera_socket import CameraTools
 from contract.board_serial import BoardTools
 from reglib.detector import Detector
@@ -21,12 +20,13 @@ class Window(object):
         self.frame = MainFrame(watcher)
 
         self.socket = CameraTools(watcher)
-        self.serial = BoardTools(watcher)
+        # self.serial = BoardTools(watcher)
 
         self.detector = Detector(watcher)
 
     def start(self):
         self.socket.start_monitor()
+        # self.serial.start_monitor()
         self.detector.waiting_for_task()
         self.app.MainLoop()
 

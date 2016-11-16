@@ -7,10 +7,7 @@ import os
 
 from collections import defaultdict
 from threading import Thread
-from Queue import Queue, Empty
-
-from common.defines import LOGLEVER
-from common.utils import Logger
+from Queue import Queue
 
 
 class EventManager(Thread):
@@ -20,7 +17,6 @@ class EventManager(Thread):
         Thread.__init__(self)
         self._queue = Queue()
         self._event = defaultdict(list)
-        self._log = None
         self.info = [u"尚未接驳", u"尚未接驳", 0, 0, 0, 0]
 
     def attach_listener(self, event_type, callback):
@@ -30,7 +26,6 @@ class EventManager(Thread):
         :param callback:回调函数
         :return None
         """
-        print "add"
         self._event[event_type].append(callback)
 
     def publish(self, event_type, msg):
@@ -39,11 +34,7 @@ class EventManager(Thread):
         :param event_type:通知类型
         :param msg:通知内容
         """
-        print event_type
-        self._put_queue("NOTICE", event_type, msg)
-
-    def _put_queue(self, target, type_, msg):
-        self._queue.put((target, type_, msg))
+        self._queue.put((event_type, msg))
 
     def _notice(self, event_type, msg=None):
         """
@@ -60,14 +51,9 @@ class EventManager(Thread):
 
     def run(self):
         """进程执行方法"""
-        self._log = Logger(PRJ_PATH)
         while True:
-            try:
-                type_, msg = self._queue.get(block=True, timeout=1)
-            except Empty:
-                pass
-            else:
-                self._notice(type_, msg)
+            type_, msg = self._queue.get()
+            self._notice(type_, msg)
 
 
 # 项目跟目录

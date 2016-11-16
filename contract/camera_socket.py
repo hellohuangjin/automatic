@@ -6,7 +6,7 @@ python socket 通信模块
 import socket
 import threading
 
-from common.defines import EVENT, InerException
+from common.defines import EVENT, INFO, InerException
 
 
 class CameraTools(object):
@@ -48,16 +48,15 @@ class CameraTools(object):
         命令解析
         :cmd:命令内容
         """
-        print cmd
         if cmd == 'Ready':
             pass
         else:
             check, pos, name = cmd.split(";")
             if check == '0':
-                pass
+                self.watcher.publish(EVENT.EVT_INFO, (INFO.BAR, 1, 0))
             else:
                 self.watcher.publish(EVENT.EVT_GETBAR, (pos, name))
-            self.watcher.publish(EVENT.EVT_INFO, None)
+                self.watcher.publish(EVENT.EVT_INFO, (INFO.BAR, 1, 1))
 
     def receive(self):
         """ 消息接收线程 """

@@ -171,7 +171,6 @@ class SelectDiolag(wx.Dialog):
         express_name = self.express_list[self.express_index]['name']
         batch_info = self.batch_list[self.batch_index]
         batch_name = batch_info['batch_date']+":"+u"第"+str(batch_info['seq_no'])+u'批'
-        print express_name, batch_name
         return express_name, batch_name
 
 
