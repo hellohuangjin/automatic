@@ -16,16 +16,17 @@ from view.window import MainFrame, ErrorFrame
 class Window(object):
 
     def __init__(self):
-        watcher = EventManager()
-        watcher.start()
-        watcher.attach_listener(EVENT.ERROR_PROGRAM, self.error)
+        self.watcher = EventManager()
+        self.watcher.start()
+        self.watcher.attach_listener(EVENT.ERROR_PROGRAM, self.error)
+        self.watcher.attach_listener(EVENT.EVT_SHUTDOWN, self.shutdown)
         self.app = wx.App()
-        self.frame = MainFrame(watcher)
+        self.frame = MainFrame(self.watcher)
 
-        self.socket = CameraTools(watcher)
-        self.serial = BoardTools(watcher)
+        self.socket = CameraTools(self.watcher)
+        self.serial = BoardTools(self.watcher)
 
-        self.detector = Detector(watcher)
+        self.detector = Detector(self.watcher)
 
     def start(self):
         self.socket.start_monitor()
@@ -35,6 +36,10 @@ class Window(object):
 
     def error(self, msg):
         error = ErrorFrame(msg)
+        self.watcher.publish(EVENT.EVT_SHUTDOWN, None)
+
+    def shutdown(self):
+        self.app.Close()
 
 if __name__ == '__main__':
     Window().start()

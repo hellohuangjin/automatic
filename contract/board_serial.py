@@ -60,7 +60,7 @@ class BoardTools(object):
             if cmd == 'urgency':
                 self.watcher.publish(EVENT.EVT_URGENCY, cmd)
             elif cmd == 'clear':
-                self.watcher.publish(EVENT.CLEAR, cmd)
+                self.watcher.publish(EVENT.EVT_CLEAR, cmd)
 
     def receive(self):
         """ 消息接收线程 """

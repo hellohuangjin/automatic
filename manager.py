@@ -57,7 +57,7 @@ class EventManager(Thread):
         self.__active = True
         while self.__active:
             try:
-                type_, msg = self._queue.get()
+                type_, msg = self._queue.get(block=True, timeout=1)
             except Empty:
                 pass
             else:
