@@ -4,38 +4,24 @@
 
 import os
 from threading import Thread
-from multiprocessing import Process, Queue, Pool
+from multiprocessing import Process, Queue
 
 from common.defines import EVENT
-# from processor import Processor
+from processor import Processor
 from manager import PRJ_PATH
 
 
-class RegProcess(Process):
+def reg_process(inqueue, outqueue):
     """识别进程"""
+    lang = os.path.join(PRJ_PATH, "source/")
+    reg = Processor(lang)
+    while True:
+        rect, name = inqueue.get()
+        path = "c:/img/"+name+".bmp"
+        width, height, _, _ = rect.split(',')
+        phone = reg.extract_phone(path, int(width), int(height))
+        outqueue.put((name.split(",")[0], phone))
 
-    def __init__(self, inqueue, outqueue):
-        super(RegProcess, self).__init__(self)
-        self._active = False
-        self._inqueue = inqueue
-        self._outqueue = outqueue
-
-    def run(self):
-        """识别进程"""
-        self._active = True
-        lang = os.path.join(PRJ_PATH, "source/")
-        # reg = Processor(lang)
-        while self._active:
-            rect, name = self._inqueue.get()
-            path = "c:/img/"+name+".bmp"
-            width, height, _, _ = rect.split(',')
-            # phone = reg.extract_phone(path, int(width), int(height))
-            phone = '15201121726'
-            self._outqueue.put((name.split(",")[0], phone))
-
-    def stop(self):
-        """终止"""
-        self._active = False
 
 
 class Detector(object):
@@ -56,7 +42,8 @@ class Detector(object):
         """等待接受任务"""
         if not self._active:
             for _ in range(4):
-                reg = RegProcess(self.inqueue, self.outqueue)
+                reg = Process(target=reg_process, args=(self.inqueue, self.outqueue,))
+                reg.start()
                 self.__processes.append(reg)
 
             self._active = True
@@ -75,4 +62,4 @@ class Detector(object):
         """终止"""
         self._active = False
         for item in self.__processes:
-            item.stop()
+            item.treminate()
