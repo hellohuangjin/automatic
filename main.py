@@ -39,7 +39,8 @@ class Window(object):
         self.watcher.publish(EVENT.EVT_SHUTDOWN, None)
 
     def shutdown(self):
-        self.app.Close()
+        """关闭"""
+        self.frame.Close()
 
 if __name__ == '__main__':
     Window().start()

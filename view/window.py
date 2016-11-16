@@ -307,6 +307,7 @@ class CtrlPanel(wx.Panel):
         """ 暂停 """
         if self.urgency:
             return
+        self.ispause = True
         self.watcher.publish(EVENT.EVT_CMD, "AA04stop")
         self.watcher.publish(EVENT.EVT_PAUSE, 'pause')
 
@@ -315,6 +316,7 @@ class CtrlPanel(wx.Panel):
         if self.urgency or not self.ispause:
             return
         self.server.clear_batch()
+        self.ispause = False
         self.watcher.publish(EVENT.EVT_COMPLETE, 'complete')
         self.watcher.publish(EVENT.EVT_CMD, "AA04stop")
         self.watcher.publish(EVENT.EVT_INFO, None)
