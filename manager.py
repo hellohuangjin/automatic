@@ -7,8 +7,9 @@ import os
 
 from collections import defaultdict
 from threading import Thread
-from Queue import Queue
+from Queue import Queue, Empty
 
+from common.defines import EVENT
 
 class EventManager(Thread):
     """事件处理中间类"""
@@ -17,7 +18,9 @@ class EventManager(Thread):
         Thread.__init__(self)
         self._queue = Queue()
         self._event = defaultdict(list)
-        self.info = [u"尚未接驳", u"尚未接驳", 0, 0, 0, 0]
+        self.__active = False
+
+        self._event[EVENT.EVT_SHUTDOWN].append(self.stop)
 
     def attach_listener(self, event_type, callback):
         """
@@ -51,9 +54,19 @@ class EventManager(Thread):
 
     def run(self):
         """进程执行方法"""
-        while True:
-            type_, msg = self._queue.get()
-            self._notice(type_, msg)
+        self.__active = True
+        while self.__active:
+            try:
+                type_, msg = self._queue.get()
+            except Empty:
+                pass
+            else:
+                self._notice(type_, msg)
+
+
+    def stop(self):
+        """终止"""
+        self.__active = False
 
 
 # 项目跟目录

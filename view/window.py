@@ -16,6 +16,14 @@ from view.custome import LabelTable, ListTable, Button
 from view.diolag import SelectDiolag, ImageExplore, LoginDiolag
 
 
+class ErrorFrame(object):
+    """错误信息界面"""
+
+    def __init__(self, msg):
+        self.dlg = wx.MessageDialog(None, msg, u"程序错误", wx.OK|wx.ICON_ERROR)
+        self.dlg.ShowModal()
+
+
 class MainFrame(wx.Frame):
     """ 主界面 """
 
@@ -129,7 +137,7 @@ class StatusPanel(wx.Panel):
         if msg == "pause":
             img_url = os.path.join(PRJ_PATH, 'source/img/pause.jpg')
         elif msg == "urgency":
-            img_url = os.path.join(PRJ_PATH, 'source/img/uergency.jpg')
+            img_url = os.path.join(PRJ_PATH, 'source/img/urgency.jpg')
         elif msg == "complete":
             img_url = os.path.join(PRJ_PATH, 'source/img/ready.jpg')
         elif msg == 'start':
@@ -184,7 +192,7 @@ class InfoPanel(wx.Panel):
 
     def clear_info(self):
         """清除信息表"""
-        info = [u'尚未接驳', u'尚未接驳', u'0', u'0', u'0', u'0']
+        info = [u'', u'', u'0', u'0', u'0', u'0']
         self.table.set_data(info)
         self.info = [0, 0, 0, 0]
 
@@ -219,7 +227,6 @@ class CtrlPanel(wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        self.key = [0, 0, 0, 1, 0]
         self.SetBackgroundColour((207, 207, 207))
         self.watcher = None
         self.urgency = False
@@ -314,4 +321,3 @@ class CtrlPanel(wx.Panel):
     def shoutdown(self, _):
         """ 关机 """
         self.watcher.publish(EVENT.EVT_CMD, "AA08shutdown")
-        exit(0)

@@ -22,10 +22,12 @@ class CameraTools(object):
         self.port = 8500
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.task = None
+        self._active = False
 
     def start_monitor(self):
         """ 启动tcp监听 """
         if not self.task:
+            self._active = True
             self._connect()
             self.task = threading.Thread(target=self.receive)
             self.task.start()
@@ -60,7 +62,7 @@ class CameraTools(object):
 
     def receive(self):
         """ 消息接收线程 """
-        while True:
+        while self._active:
             cmd = self.server.recv(64)
             if cmd == '':
                 self._reconnect()
