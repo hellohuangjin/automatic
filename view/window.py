@@ -190,7 +190,7 @@ class InfoPanel(wx.Panel):
             self.table.set_cell(4, str(self.info[2]))
             self.table.set_cell(5, str(self.info[3]))
 
-    def clear_info(self):
+    def clear_info(self, _):
         """清除信息表"""
         info = [u'', u'', u'0', u'0', u'0', u'0']
         self.table.set_data(info)
@@ -229,6 +229,7 @@ class CtrlPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.SetBackgroundColour((207, 207, 207))
         self.watcher = None
+        self.ispause = False
         self.urgency = False
         self.server = Server()
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -311,7 +312,7 @@ class CtrlPanel(wx.Panel):
 
     def complete(self, _):
         """ 完成接驳 """
-        if self.urgency:
+        if self.urgency or not self.ispause:
             return
         self.server.clear_batch()
         self.watcher.publish(EVENT.EVT_COMPLETE, 'complete')
