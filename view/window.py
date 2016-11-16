@@ -71,7 +71,7 @@ class MainFrame(wx.Frame):
         watcher.attach_listener(EVENT.EVT_COMPLETE, self.status_panel.change_status)
 
         # 信息展示view事件
-        watcher.attach(EVENT.EVT_GETBAR, self.info_panel.change_img)
+        watcher.attach_listener(EVENT.EVT_GETBAR, self.info_panel.change_img)
         watcher.attach_listener(EVENT.EVT_INFO, self.info_panel.update_info)
         watcher.attach_listener(EVENT.EVT_COMPLETE, self.info_panel.clear_info)
 
@@ -188,11 +188,12 @@ class InfoPanel(wx.Panel):
         self.table.set_data(info)
         self.info = [0, 0, 0, 0]
 
-    def change_img(self, name):
+    def change_img(self, msg):
         """
         变更显示快递图片
         :param name:图片名称
         """
+        _, name = msg
         url = "c:/img/" + name + ".bmp"
         img = wx.Image(url, wx.BITMAP_TYPE_BMP)
         self.img.SetBitmap(img.ConvertToBitmap())

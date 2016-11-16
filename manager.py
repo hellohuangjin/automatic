@@ -26,7 +26,6 @@ class EventManager(Thread):
         :param callback:回调函数
         :return None
         """
-        print "add", event_type
         self._event[event_type].append(callback)
 
     def publish(self, event_type, msg):
