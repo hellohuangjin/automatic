@@ -71,7 +71,7 @@ class MainFrame(wx.Frame):
         watcher.attach_listener(EVENT.EVT_COMPLETE, self.status_panel.change_status)
 
         # 信息展示view事件
-        # watcher.attach(EVENT.EVT_GETBAR, self.info_panel.change_img)
+        watcher.attach(EVENT.EVT_GETBAR, self.info_panel.change_img)
         watcher.attach_listener(EVENT.EVT_INFO, self.info_panel.update_info)
         watcher.attach_listener(EVENT.EVT_COMPLETE, self.info_panel.clear_info)
 

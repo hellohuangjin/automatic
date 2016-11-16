@@ -7,19 +7,19 @@ from threading import Thread
 from multiprocessing import Process, Queue, Pool
 
 from common.defines import EVENT
-# from processor import Processor
+from processor import Processor
 from manager import PRJ_PATH
 
 
 def reg_process(inqueue, outqueue):
     """识别进程"""
-    lang = os.path.join(None, "source/")
-    reg_process = Processor(lang)
+    lang = os.path.join(PRJ_PATH, "source/")
+    reg = Processor(lang)
     while True:
         rect, name = inqueue.get()
         path = "c:/img/"+name+".bmp"
         width, height, _, _ = rect.split(',')
-        phone = reg_process.extract_phone(path, int(width), int(height))
+        phone = reg.extract_phone(path, int(width), int(height))
         outqueue.put((name.split(",")[0], phone))
 
 

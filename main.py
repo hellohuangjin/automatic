@@ -20,13 +20,13 @@ class Window(object):
         self.frame = MainFrame(watcher)
 
         self.socket = CameraTools(watcher)
-        # self.serial = BoardTools(watcher)
+        self.serial = BoardTools(watcher)
 
         self.detector = Detector(watcher)
 
     def start(self):
         self.socket.start_monitor()
-        # self.serial.start_monitor()
+        self.serial.start_monitor()
         self.detector.waiting_for_task()
         self.app.MainLoop()
 

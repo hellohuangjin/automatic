@@ -80,5 +80,5 @@ class BoardTools(object):
         try:
             self.serial = serial.Serial(self.port, self.baudrate)
         except serial.SerialException:
-            self.watcher.publish(EVENT.PROGRAM_ERROR, "serial connect error")
+            self.watcher.publish(EVENT.ERROR_PROGRAM, "serial connect error")
             raise InerException("serial content error", __file__)
