@@ -23,6 +23,7 @@ class CameraTools(object):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.task = None
         self._active = False
+        self.watcher.attach_listener(EVENT.EVT_SHUTDOWN, self.stop)
 
     def start_monitor(self):
         """ 启动tcp监听 """
@@ -81,3 +82,8 @@ class CameraTools(object):
         except socket.error:
             self.watcher.publish(EVENT.ERROR_PROGRAM, "socket connect error")
             raise InerException("socket connect error", __file__)
+
+    def stop(self):
+        """终止"""
+        self._active = False
+        self.server.close()
