@@ -324,3 +324,4 @@ class CtrlPanel(wx.Panel):
     def shoutdown(self, _):
         """ 关机 """
         self.watcher.publish(EVENT.EVT_CMD, "AA08shutdown")
+        self.watcher.publish(EVENT.EVT_SHUTDOWN, None)

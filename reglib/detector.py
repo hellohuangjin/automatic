@@ -62,4 +62,4 @@ class Detector(object):
         """终止"""
         self._active = False
         for item in self.__processes:
-            item.treminate()
+            item.terminate()
