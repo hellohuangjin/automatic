@@ -4,23 +4,36 @@
 
 import os
 from threading import Thread
+from Queue import Empty
 from multiprocessing import Process, Queue
 
 from common.defines import EVENT
 from processor import Processor
 from manager import PRJ_PATH
 
+class RegProcess(Process):
 
-def reg_process(inqueue, outqueue):
-    """识别进程"""
-    lang = os.path.join(PRJ_PATH, "source/")
-    reg = Processor(lang)
-    while True:
-        rect, name = inqueue.get()
-        path = "c:/img/"+name+".bmp"
-        width, height, _, _ = rect.split(',')
-        phone = reg.extract_phone(path, int(width), int(height))
-        outqueue.put((name.split(",")[0], phone))
+    def __init__(self, inqueue, outqueue):
+        super(RegProcess, self).__init__(self)
+        self.inqueue = inqueue
+        self.outqueue = outqueue
+        self.active = False
+
+    def run(self):
+        """识别进程"""
+        lang = os.path.join(PRJ_PATH, "source/")
+        reg = Processor(lang)
+        self.active = True
+        while self.active:
+            try:
+                rect, name = self.inqueue.get(timeout=1)
+            except Empty:
+                pass
+            else:
+                path = "c:/img/"+name+".bmp"
+                width, height, _, _ = rect.split(',')
+                phone = reg.extract_phone(path, int(width), int(height))
+                self.outqueue.put((name.split(",")[0], phone))
 
 
 
@@ -42,7 +55,7 @@ class Detector(object):
         """等待接受任务"""
         if not self._active:
             for _ in range(4):
-                reg = Process(target=reg_process, args=(self.inqueue, self.outqueue,))
+                reg = RegProcess(self.inqueue, self.outqueue)
                 reg.start()
                 self.__processes.append(reg)
 
@@ -62,4 +75,4 @@ class Detector(object):
         """终止"""
         self._active = False
         for item in self.__processes:
-            item.terminate()
+            item.active = False
